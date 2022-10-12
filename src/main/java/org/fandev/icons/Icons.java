@@ -14,6 +14,9 @@ public interface Icons {
     public static final Icon ENUM = IconLoader.getIcon("/icons/structure/enum.png");
     public static final Icon METHOD = IconLoader.getIcon("/icons/structure/method.png");
     public static final Icon FIELD = IconLoader.getIcon("/icons/structure/field.png");
+
+    public static final Icon FILE = IconLoader.getIcon("/icons/structure/icon-file.png");
+
     public static final Icon FAN_16 = IconLoader.getIcon("/icons/fantom-16x16.png");
     public static final Icon FAN_24 = IconLoader.getIcon("/icons/fantom-24x24.png");
     public static final Icon FAN_MODULE_OPEN = IconLoader.getIcon("/icons/modules/fan_module_opened.png");

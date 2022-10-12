@@ -15,5 +15,5 @@ object FantomFileType: LanguageFileType(FantomLanguage) {
 
     override fun getDefaultExtension(): String = EXTENSION
 
-    override fun getIcon(): Icon? = Icons.POD
+    override fun getIcon(): Icon? = Icons.FILE
 }
