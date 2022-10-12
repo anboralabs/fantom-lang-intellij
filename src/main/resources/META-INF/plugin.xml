@@ -27,6 +27,9 @@
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-
+        <fileType name="Fantom" implementationClass="org.fandev.lang.fan.FantomFileType"
+                  fieldName="INSTANCE" language="fantom_lang" extensions="fan"/>
+        <lang.parserDefinition language="fantom_lang"
+                               implementationClass="org.fandev.lang.fan.FantomParserDefinition"/>
     </extensions>
 </idea-plugin>
