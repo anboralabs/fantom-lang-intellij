@@ -44,7 +44,7 @@ public class FanBaseElementImpl<T extends StubElement>
     }
 
     protected FanTypeDefinition getFanTypeByName(String name) {
-        FanIndex index = (FanIndex) getProject().getComponent("Fantom Index");
+        FanIndex index = getProject().getService(FanIndex.class);
         FanFile objFile = index.getFanFileByTypeName(name);
 
         if (objFile != null) {

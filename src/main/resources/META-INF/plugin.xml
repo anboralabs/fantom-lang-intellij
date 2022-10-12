@@ -31,5 +31,6 @@
                   fieldName="INSTANCE" language="fantom_lang" extensions="fan"/>
         <lang.parserDefinition language="fantom_lang"
                                implementationClass="org.fandev.lang.fan.FantomParserDefinition"/>
+        <projectService serviceImplementation="org.fandev.index.FanIndex" />
     </extensions>
 </idea-plugin>

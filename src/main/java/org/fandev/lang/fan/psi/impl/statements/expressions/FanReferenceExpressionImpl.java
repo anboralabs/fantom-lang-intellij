@@ -391,7 +391,7 @@ public class FanReferenceExpressionImpl extends FanReferenceElementImpl implemen
         }
 
         private void resolvePodTypes(FanReferenceExpressionImpl refExpr, String podName, String toMatch, boolean gotoDecleration, List<FanResolveResult> results) {
-            FanIndex index = (FanIndex) refExpr.getProject().getComponent(FanIndex.class);
+            FanIndex index = (FanIndex) refExpr.getProject().getService(FanIndex.class);
 
             Set<FanTypeDefinition> typesStartingWith = index.getPodTypesStartingWith(podName, toMatch);
             for (FanTypeDefinition def : typesStartingWith) {
@@ -403,7 +403,7 @@ public class FanReferenceExpressionImpl extends FanReferenceElementImpl implemen
         }
 
         private void resolveTypes(List<FanResolveResult> results, ResolveHint hint) {
-            FanIndex index = (FanIndex) hint.refExpr.getProject().getComponent(FanIndex.class);
+            FanIndex index = (FanIndex) hint.refExpr.getProject().getService(FanIndex.class);;
 
 
             if (!hint.isFqn()) {

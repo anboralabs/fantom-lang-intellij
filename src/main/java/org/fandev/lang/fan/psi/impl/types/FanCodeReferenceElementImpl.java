@@ -139,7 +139,7 @@ public class FanCodeReferenceElementImpl extends FanReferenceElementImpl impleme
                     return results.<FanResolveResult>toArray(new FanResolveResult[0]);
                 }
 
-                FanIndex fanIndex = (FanIndex) manager.getProject().getComponent("Fantom Index");
+                FanIndex fanIndex = (FanIndex) manager.getProject().getService(FanIndex.class);
                 FanFile fanFile = fanIndex.getFanFileByTypeName(refName);
                 if (fanFile != null) {
                     FanFile psiFile = fanFile;
