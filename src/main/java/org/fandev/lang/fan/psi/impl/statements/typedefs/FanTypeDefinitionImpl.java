@@ -93,13 +93,13 @@ public abstract class FanTypeDefinitionImpl extends FanBaseElementImpl<FanTypeDe
 
     @NotNull
     public PsiClassType[] getExtendsListTypes() {
-        List<PsiClassType> extendsTypes = getReferenceListTypes((FanReferenceList) getInheritanceClause());
-        return extendsTypes.<PsiClassType>toArray(new PsiClassType[extendsTypes.size()]);
+        List<PsiClassType> extendsTypes = getReferenceListTypes(getInheritanceClause());
+        return extendsTypes.toArray(new PsiClassType[extendsTypes.size()]);
     }
 
     @Nullable
     public FanInheritanceClause getInheritanceClause() {
-        return (FanInheritanceClause) findChildByClass(FanInheritanceClause.class);
+        return findChildByClass(FanInheritanceClause.class);
     }
 
     @NotNull
@@ -112,11 +112,11 @@ public abstract class FanTypeDefinitionImpl extends FanBaseElementImpl<FanTypeDe
         for (PsiClassType psiClassType : superTypes) {
             FanTypeDefinition fanType = (FanTypeDefinition) psiClassType.resolve();
             if (fanType instanceof org.fandev.lang.fan.psi.api.statements.typeDefs.FanClassDefinition) {
-                return (PsiClass) fanType;
+                return fanType;
             }
         }
         if (!"Obj".equals(getName())) {
-            return (PsiClass) getFanObjType();
+            return getFanObjType();
         }
         return null;
     }
@@ -128,7 +128,7 @@ public abstract class FanTypeDefinitionImpl extends FanBaseElementImpl<FanTypeDe
     @NotNull
     public PsiClass[] getSupers() {
         PsiClassType[] superTypes = getSuperTypes();
-        List<PsiClass> result = new ArrayList<PsiClass>();
+        List<PsiClass> result = new ArrayList<>();
         for (PsiClassType superType : superTypes) {
             PsiClass superClass = superType.resolve();
             if (superClass != null) {
@@ -136,7 +136,7 @@ public abstract class FanTypeDefinitionImpl extends FanBaseElementImpl<FanTypeDe
             }
         }
 
-        return result.<PsiClass>toArray(new PsiClass[result.size()]);
+        return result.toArray(new PsiClass[result.size()]);
     }
 
     @NotNull
@@ -153,7 +153,7 @@ public abstract class FanTypeDefinitionImpl extends FanBaseElementImpl<FanTypeDe
     }
 
     private static List<PsiClassType> getReferenceListTypes(@Nullable FanReferenceList list) {
-        ArrayList<PsiClassType> types = new ArrayList<PsiClassType>();
+        ArrayList<PsiClassType> types = new ArrayList<>();
         if (list != null) {
             for (FanCodeReferenceElement ref : list.getReferenceElements()) {
                 types.add(new FanClassReferenceType(ref));
@@ -192,7 +192,7 @@ public abstract class FanTypeDefinitionImpl extends FanBaseElementImpl<FanTypeDe
             logger.error("Error looking for name element for " + this, e);
         }
         if (element != null) {
-            return (PsiIdentifier) new FanLightIdentifier((PsiManager) getManager(), getContainingFile(), element.getTextRange());
+            return new FanLightIdentifier(getManager(), getContainingFile(), element.getTextRange());
         }
         return null;
     }
@@ -202,7 +202,7 @@ public abstract class FanTypeDefinitionImpl extends FanBaseElementImpl<FanTypeDe
     }
 
     public PsiModifierList getModifierList() {
-        return (PsiModifierList) findChildByClass(FanModifierList.class);
+        return findChildByClass(FanModifierList.class);
     }
 
     public boolean hasModifierProperty(String name) {
@@ -213,22 +213,22 @@ public abstract class FanTypeDefinitionImpl extends FanBaseElementImpl<FanTypeDe
     public Icon getIcon(int flags) {
         Icon icon = getIconInner();
         boolean isLocked = ((flags & 0x2) != 0 && !isWritable());
-        RowIcon rowIcon = IconManager.getInstance().createLayeredIcon(this, icon, PsiUtil.getFlags((PsiModifierListOwner) this, isLocked));
+        RowIcon rowIcon = IconManager.getInstance().createLayeredIcon(this, icon, PsiUtil.getFlags(this, isLocked));
         VisibilityIcons.setVisibilityIcon(getModifierList(), rowIcon);
-        return (Icon) rowIcon;
+        return rowIcon;
     }
 
     @NotNull
     public FanMethod[] getFanMethods() {
         if (this.fanMethods == null) {
             FanSlot[] fanSlots = getSlots();
-            List<FanMethod> list = new ArrayList<FanMethod>();
+            List<FanMethod> list = new ArrayList<>();
             for (FanSlot fanSlot : fanSlots) {
                 if (fanSlot instanceof FanMethod) {
                     list.add((FanMethod) fanSlot);
                 }
             }
-            this.fanMethods = list.<FanMethod>toArray(new FanMethod[list.size()]);
+            this.fanMethods = list.toArray(new FanMethod[list.size()]);
         }
         return this.fanMethods;
     }
@@ -237,13 +237,13 @@ public abstract class FanTypeDefinitionImpl extends FanBaseElementImpl<FanTypeDe
     public FanField[] getFanFields() {
         if (this.fanFields == null) {
             FanSlot[] fanSlots = getSlots();
-            List<FanField> list = new ArrayList<FanField>();
+            List<FanField> list = new ArrayList<>();
             for (FanSlot fanSlot : fanSlots) {
                 if (fanSlot instanceof FanField) {
                     list.add((FanField) fanSlot);
                 }
             }
-            this.fanFields = list.<FanField>toArray(new FanField[list.size()]);
+            this.fanFields = list.toArray(new FanField[list.size()]);
         }
         return this.fanFields;
     }
@@ -251,7 +251,7 @@ public abstract class FanTypeDefinitionImpl extends FanBaseElementImpl<FanTypeDe
     @NotNull
     public FanSlot[] getSlots() {
         if (this.fanSlots == null) {
-            List<FanSlot> slots = new ArrayList<FanSlot>();
+            List<FanSlot> slots = new ArrayList<>();
             PsiElement element = findChildByType(getBodyElementType());
             if (element != null) {
                 PsiElement[] bodyEls = element.getChildren();
@@ -261,7 +261,7 @@ public abstract class FanTypeDefinitionImpl extends FanBaseElementImpl<FanTypeDe
                     }
                 }
             }
-            this.fanSlots = slots.<FanSlot>toArray(new FanSlot[slots.size()]);
+            this.fanSlots = slots.toArray(new FanSlot[slots.size()]);
         }
         return this.fanSlots;
     }
@@ -288,35 +288,35 @@ public abstract class FanTypeDefinitionImpl extends FanBaseElementImpl<FanTypeDe
 
     @NotNull
     public FanSlot[] getSlots(String modifier) {
-        List<FanSlot> slots = new ArrayList<FanSlot>();
+        List<FanSlot> slots = new ArrayList<>();
         for (FanSlot slot : getSlots()) {
             if (slot.hasModifierProperty(modifier)) {
                 slots.add(slot);
             }
         }
-        return slots.<FanSlot>toArray(new FanSlot[slots.size()]);
+        return slots.toArray(new FanSlot[slots.size()]);
     }
 
     @NotNull
     public FanMethod[] getFanMethods(String modifier) {
-        List<FanMethod> methods = new ArrayList<FanMethod>();
+        List<FanMethod> methods = new ArrayList<>();
         for (FanMethod method : getFanMethods()) {
             if (method.hasModifierProperty(modifier)) {
                 methods.add(method);
             }
         }
-        return methods.<FanMethod>toArray(new FanMethod[methods.size()]);
+        return methods.toArray(new FanMethod[methods.size()]);
     }
 
     @NotNull
     public FanField[] getFanFields(String modifier) {
-        List<FanField> fields = new ArrayList<FanField>();
+        List<FanField> fields = new ArrayList<>();
         for (FanField field : getFanFields()) {
             if (field.hasModifierProperty(modifier)) {
                 fields.add(field);
             }
         }
-        return fields.<FanField>toArray(new FanField[fields.size()]);
+        return fields.toArray(new FanField[fields.size()]);
     }
 
     public String getJavaQualifiedName() {
@@ -324,7 +324,7 @@ public abstract class FanTypeDefinitionImpl extends FanBaseElementImpl<FanTypeDe
     }
 
     public FanTypeDefinitionBody getBodyElement() {
-        return (FanTypeDefinitionBody) findChildByType(getBodyElementType());
+        return findChildByType(getBodyElementType());
     }
 
 

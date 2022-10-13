@@ -15,43 +15,37 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public interface FanTypeDefinition extends StubBasedPsiElement<FanTypeDefinitionStub>, PsiNamedElement, PsiClass, FanTopLevelDefintion, FanTopStatement {
-  @NotNull
-  String getPodName();
-  
-  @NotNull
-  FanSlot[] getSlots();
-  
-  @NotNull
-  FanSlot[] getSlots(String paramString);
-  
-  @NotNull
-  FanMethod[] getFanMethods();
-  
-  @NotNull
-  FanMethod[] getFanMethods(String paramString);
-  
-  @NotNull
-  FanField[] getFanFields();
-  
-  @NotNull
-  FanField[] getFanFields(String paramString);
-  
-  FanField getFieldByName(String paramString);
-  
-  @Nullable
-  FanMethod getMethodByName(@NotNull String paramString);
-  
-  FanTypeDefinition getSuperType();
-  
-  String getJavaQualifiedName();
-  
-  PsiElement getBodyElement();
-  
-  PsiElement addMemberDeclaration(@NotNull PsiElement paramPsiElement1, PsiElement paramPsiElement2) throws IncorrectOperationException;
+    @NotNull
+    String getPodName();
+
+    @NotNull
+    FanSlot[] getSlots();
+
+    @NotNull
+    FanSlot[] getSlots(String paramString);
+
+    @NotNull
+    FanMethod[] getFanMethods();
+
+    @NotNull
+    FanMethod[] getFanMethods(String paramString);
+
+    @NotNull
+    FanField[] getFanFields();
+
+    @NotNull
+    FanField[] getFanFields(String paramString);
+
+    FanField getFieldByName(String paramString);
+
+    @Nullable
+    FanMethod getMethodByName(@NotNull String paramString);
+
+    FanTypeDefinition getSuperType();
+
+    String getJavaQualifiedName();
+
+    PsiElement getBodyElement();
+
+    PsiElement addMemberDeclaration(@NotNull PsiElement paramPsiElement1, PsiElement paramPsiElement2) throws IncorrectOperationException;
 }
-
-
-/* Location:              /Users/dalgarins/Downloads/fan4idea-0.0.6/lib/fan4idea.jar!/org/fandev/lang/fan/psi/api/statements/typeDefs/FanTypeDefinition.class
- * Java compiler version: 5 (49.0)
- * JD-Core Version:       1.1.3
- */

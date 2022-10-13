@@ -1,5 +1,6 @@
 package org.fandev.lang.fan.psi;
 
+import com.intellij.openapi.components.ComponentManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
@@ -25,7 +26,7 @@ public class FanPsiElementFactory {
     }
 
     public static FanPsiElementFactory getInstance(Project project) {
-        return (FanPsiElementFactory) ServiceManager.getService(project, FanPsiElementFactory.class);
+        return project.getService(FanPsiElementFactory.class);
     }
 
     @Nullable

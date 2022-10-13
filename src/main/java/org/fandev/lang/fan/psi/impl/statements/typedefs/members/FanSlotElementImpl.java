@@ -92,9 +92,9 @@ public abstract class FanSlotElementImpl<T extends NamedStub>
 
     @Nullable
     public PsiModifierList getModifierList() {
-        FanModifierListImpl list = (FanModifierListImpl) findChildByClass(FanModifierListImpl.class);
+        FanModifierListImpl list = findChildByClass(FanModifierListImpl.class);
         assert list != null;
-        return (PsiModifierList) list;
+        return list;
     }
 
     public boolean hasModifierProperty(String name) {
@@ -128,9 +128,9 @@ public abstract class FanSlotElementImpl<T extends NamedStub>
     public Icon getIcon(int flags) {
         Icon icon = getIconInner();
         boolean isLocked = ((flags & 0x2) != 0 && !isWritable());
-        RowIcon rowIcon = IconManager.getInstance().createLayeredIcon(this, icon, ElementPresentationUtil.getFlags((PsiModifierListOwner) this, isLocked));
+        RowIcon rowIcon = IconManager.getInstance().createLayeredIcon(this, icon, ElementPresentationUtil.getFlags(this, isLocked));
         VisibilityIcons.setVisibilityIcon(getModifierList(), rowIcon);
-        return (Icon) rowIcon;
+        return rowIcon;
     }
 
 

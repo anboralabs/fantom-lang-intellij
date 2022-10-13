@@ -70,7 +70,7 @@ public class FanCodeReferenceElementImpl extends FanReferenceElementImpl impleme
             PsiElement resolve = qualifier.resolve();
             if (resolve instanceof PsiClass) {
                 PsiClass clazz = (PsiClass) resolve;
-                List<PsiElement> result = new ArrayList<PsiElement>();
+                List<PsiElement> result = new ArrayList<>();
 
                 for (PsiField field : clazz.getFields()) {
                     if (field.hasModifierProperty("static")) {
@@ -106,11 +106,11 @@ public class FanCodeReferenceElementImpl extends FanReferenceElementImpl impleme
 
         public ResolveResult[] resolve(FanCodeReferenceElementImpl fanCodeReferenceElement, boolean incompleteCode) {
             if (fanCodeReferenceElement.getReferenceName() == null)
-                return (ResolveResult[]) FanResolveResult.EMPTY_ARRAY;
+                return FanResolveResult.EMPTY_ARRAY;
 
-            FanResolveResult[] results = _resolve(fanCodeReferenceElement, (PsiManager) fanCodeReferenceElement.getManager());
+            FanResolveResult[] results = _resolve(fanCodeReferenceElement, fanCodeReferenceElement.getManager());
 
-            return (ResolveResult[]) results;
+            return results;
         }
 
 
@@ -118,28 +118,26 @@ public class FanCodeReferenceElementImpl extends FanReferenceElementImpl impleme
             final String refName = ref.getReferenceName();
             FanCodeReferenceElement qualifier = (FanCodeReferenceElement) ref.getQualifier();
             if (qualifier != null) {
-                final List<FanResolveResult> results = new ArrayList<FanResolveResult>();
-                ProjectRootManager.getInstance(manager.getProject()).getFileIndex().iterateContent(new ContentIterator() {
-                    public boolean processFile(VirtualFile virtualFile) {
-                        if (FantomFileType.INSTANCE == virtualFile.getFileType()) {
-                            FanFile psiFile = (FanFile) manager.findFile(virtualFile);
-                            PsiClass[] classes = psiFile.getClasses();
-                            for (PsiClass aClass : classes) {
-                                if (refName.equals(aClass.getName())) {
-                                    boolean isAccessible = PsiUtil.isAccessible(aClass, ref, aClass);
-                                    results.add(new FanResolveResultImpl((PsiElement) aClass, isAccessible));
-                                }
+                final List<FanResolveResult> results = new ArrayList<>();
+                ProjectRootManager.getInstance(manager.getProject()).getFileIndex().iterateContent(virtualFile -> {
+                    if (FantomFileType.INSTANCE == virtualFile.getFileType()) {
+                        FanFile psiFile = (FanFile) manager.findFile(virtualFile);
+                        PsiClass[] classes = psiFile.getClasses();
+                        for (PsiClass aClass : classes) {
+                            if (refName.equals(aClass.getName())) {
+                                boolean isAccessible = PsiUtil.isAccessible(aClass, ref, aClass);
+                                results.add(new FanResolveResultImpl(aClass, isAccessible));
                             }
                         }
-                        return true;
                     }
+                    return true;
                 });
 
                 if (results.size() > 0) {
-                    return results.<FanResolveResult>toArray(new FanResolveResult[0]);
+                    return results.toArray(new FanResolveResult[0]);
                 }
 
-                FanIndex fanIndex = (FanIndex) manager.getProject().getService(FanIndex.class);
+                FanIndex fanIndex = manager.getProject().getService(FanIndex.class);
                 FanFile fanFile = fanIndex.getFanFileByTypeName(refName);
                 if (fanFile != null) {
                     FanFile psiFile = fanFile;
@@ -147,8 +145,8 @@ public class FanCodeReferenceElementImpl extends FanReferenceElementImpl impleme
                     for (PsiClass aClass : classes) {
                         try {
                             if (refName.equals(aClass.getName())) {
-                                boolean isAccessible = PsiUtil.isAccessible((PsiMember) aClass, (PsiElement) ref, null);
-                                results.add(new FanResolveResultImpl((PsiElement) aClass, isAccessible));
+                                boolean isAccessible = PsiUtil.isAccessible(aClass, ref, null);
+                                results.add(new FanResolveResultImpl(aClass, isAccessible));
                             }
                         } catch (Exception e) {
                         }
@@ -156,7 +154,7 @@ public class FanCodeReferenceElementImpl extends FanReferenceElementImpl impleme
                 }
 
 
-                return results.<FanResolveResult>toArray(new FanResolveResult[0]);
+                return results.toArray(new FanResolveResult[0]);
             }
             return FanResolveResult.EMPTY_ARRAY;
         }

@@ -19,44 +19,40 @@ import java.util.Set;
 public class CollectClassMembersUtil {
     private static final Key<CachedValue<Pair<Map<String, CandidateInfo>, Map<String, List<CandidateInfo>>>>> CACHED_MEMBERS = Key.create("CACHED_CLASS_MEMBERS");
 
-
     private static final Key<CachedValue<Pair<Map<String, CandidateInfo>, Map<String, List<CandidateInfo>>>>> CACHED_MEMBERS_INCLUDING_SYNTHETIC = Key.create("CACHED_MEMBERS_INCLUDING_SYNTHETIC");
-
 
     public static Map<String, List<CandidateInfo>> getAllMethods(PsiClass aClass, boolean includeSynthetic) {
         Key<CachedValue<Pair<Map<String, CandidateInfo>, Map<String, List<CandidateInfo>>>>> key = includeSynthetic ? CACHED_MEMBERS_INCLUDING_SYNTHETIC : CACHED_MEMBERS;
 
-        CachedValue<Pair<Map<String, CandidateInfo>, Map<String, List<CandidateInfo>>>> cachedValue = (CachedValue<Pair<Map<String, CandidateInfo>, Map<String, List<CandidateInfo>>>>) aClass.getUserData(key);
+        CachedValue<Pair<Map<String, CandidateInfo>, Map<String, List<CandidateInfo>>>> cachedValue = aClass.getUserData(key);
         if (cachedValue == null) {
             cachedValue = buildCache(aClass, includeSynthetic);
         }
 
-        Pair<Map<String, CandidateInfo>, Map<String, List<CandidateInfo>>> value = (Pair<Map<String, CandidateInfo>, Map<String, List<CandidateInfo>>>) cachedValue.getValue();
+        Pair<Map<String, CandidateInfo>, Map<String, List<CandidateInfo>>> value = cachedValue.getValue();
         assert value != null;
-        return (Map<String, List<CandidateInfo>>) value.getSecond();
+        return value.getSecond();
     }
 
     public static Map<String, CandidateInfo> getAllFields(PsiClass aClass) {
-        CachedValue<Pair<Map<String, CandidateInfo>, Map<String, List<CandidateInfo>>>> cachedValue = (CachedValue<Pair<Map<String, CandidateInfo>, Map<String, List<CandidateInfo>>>>) aClass.getUserData(CACHED_MEMBERS);
+        CachedValue<Pair<Map<String, CandidateInfo>, Map<String, List<CandidateInfo>>>> cachedValue = aClass.getUserData(CACHED_MEMBERS);
         if (cachedValue == null) {
             cachedValue = buildCache(aClass, false);
         }
 
-        Pair<Map<String, CandidateInfo>, Map<String, List<CandidateInfo>>> value = (Pair<Map<String, CandidateInfo>, Map<String, List<CandidateInfo>>>) cachedValue.getValue();
+        Pair<Map<String, CandidateInfo>, Map<String, List<CandidateInfo>>> value = cachedValue.getValue();
         assert value != null;
-        return (Map<String, CandidateInfo>) value.getFirst();
+        return value.getFirst();
     }
 
     private static CachedValue<Pair<Map<String, CandidateInfo>, Map<String, List<CandidateInfo>>>> buildCache(final PsiClass aClass, final boolean includeSynthetic) {
         final CachedValuesManager manager = CachedValuesManager.getManager(aClass.getProject());
-        return manager.createCachedValue(new CachedValueProvider<Pair<Map<String, CandidateInfo>, Map<String, List<CandidateInfo>>>>() {
-            public Result<Pair<Map<String, CandidateInfo>, Map<String, List<CandidateInfo>>>> compute() {
-                HashMap hashMap1 = new HashMap();
-                HashMap hashMap2 = new HashMap();
+        return manager.createCachedValue((CachedValueProvider<Pair<Map<String, CandidateInfo>, Map<String, List<CandidateInfo>>>>) () -> {
+            HashMap hashMap1 = new HashMap();
+            HashMap hashMap2 = new HashMap();
 
-                CollectClassMembersUtil.processClass(aClass, (Map<String, CandidateInfo>) hashMap1, (Map<String, List<CandidateInfo>>) hashMap2, (Set<PsiClass>) new HashSet(), PsiSubstitutor.EMPTY, includeSynthetic);
-                return new Result(new Pair(hashMap1, hashMap2), new Object[]{PsiModificationTracker.MODIFICATION_COUNT});
-            }
+            CollectClassMembersUtil.processClass(aClass, (Map<String, CandidateInfo>) hashMap1, (Map<String, List<CandidateInfo>>) hashMap2, (Set<PsiClass>) new HashSet(), PsiSubstitutor.EMPTY, includeSynthetic);
+            return new CachedValueProvider.Result(new Pair(hashMap1, hashMap2), new Object[]{PsiModificationTracker.MODIFICATION_COUNT});
         }, false);
     }
 
@@ -68,11 +64,11 @@ public class CollectClassMembersUtil {
         for (PsiField field : aClass.getFields()) {
             String name = field.getName();
             if (!allFields.containsKey(name)) {
-                allFields.put(name, new CandidateInfo((PsiElement) field, substitutor));
+                allFields.put(name, new CandidateInfo(field, substitutor));
             }
         }
 
-        for (PsiMethod method : (includeSynthetic || !(aClass instanceof FanTypeDefinition)) ? aClass.getMethods() : (PsiMethod[]) ((FanTypeDefinition) aClass).getFanMethods()) {
+        for (PsiMethod method : (includeSynthetic || !(aClass instanceof FanTypeDefinition)) ? aClass.getMethods() : ((FanTypeDefinition) aClass).getFanMethods()) {
             addMethod(allMethods, method, substitutor);
         }
 
@@ -89,11 +85,11 @@ public class CollectClassMembersUtil {
         String name = method.getName();
         List<CandidateInfo> methods = allMethods.get(name);
         if (methods == null) {
-            methods = new ArrayList<CandidateInfo>();
+            methods = new ArrayList<>();
             allMethods.put(name, methods);
-            methods.add(new CandidateInfo((PsiElement) method, substitutor));
+            methods.add(new CandidateInfo(method, substitutor));
         } else {
-            methods.add(new CandidateInfo((PsiElement) method, substitutor));
+            methods.add(new CandidateInfo(method, substitutor));
         }
     }
 }

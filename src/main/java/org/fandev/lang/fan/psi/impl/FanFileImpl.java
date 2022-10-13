@@ -39,10 +39,9 @@ public class FanFileImpl
             return this.podName;
         }
 
-
         if ("build.fan".equals(getName())) {
 
-            FanClassDefinition[] classDef = (FanClassDefinition[]) findChildrenByClass(FanClassDefinition.class);
+            FanClassDefinition[] classDef = findChildrenByClass(FanClassDefinition.class);
             if (classDef.length > 0) {
                 FanMethod[] methods = classDef[0].getFanMethods();
                 if (methods.length > 0) {
@@ -96,7 +95,7 @@ public class FanFileImpl
     }
 
     public FanTypeDefinition[] getTypeDefinitions() {
-        return (FanTypeDefinition[]) findChildrenByClass(FanTypeDefinition.class);
+        return findChildrenByClass(FanTypeDefinition.class);
     }
 
     public FanTypeDefinition getTypeByName(String name) {
@@ -110,7 +109,7 @@ public class FanFileImpl
 
     @NotNull
     public PsiClass[] getClasses() {
-        return (PsiClass[]) getTypeDefinitions();
+        return getTypeDefinitions();
     }
 
     public String getPackageName() {
@@ -122,6 +121,6 @@ public class FanFileImpl
     }
 
     public FanTopLevelDefintion[] getTopLevelDefinitions() {
-        return (FanTopLevelDefintion[]) findChildrenByClass(FanTopLevelDefintion.class);
+        return findChildrenByClass(FanTopLevelDefintion.class);
     }
 }

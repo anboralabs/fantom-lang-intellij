@@ -1,25 +1,16 @@
-/*    */ package org.fandev.lang.fan.parsing.auxiliary;
-/*    */ 
-/*    */ import com.intellij.lang.PsiBuilder;
-/*    */ import org.fandev.lang.fan.FanTokenTypes;
-/*    */ 
-/*    */ 
-/*    */ 
-/*    */ 
-/*    */ public class Separators
-/*    */ {
-/*    */   public static boolean parse(PsiBuilder builder) {
-/* 12 */     boolean result = false;
-/* 13 */     while (!builder.eof() && FanTokenTypes.SEPARATOR.contains(builder.getTokenType())) {
-/* 14 */       builder.advanceLexer();
-/* 15 */       result = true;
-/*    */     } 
-/* 17 */     return result;
-/*    */   }
-/*    */ }
+package org.fandev.lang.fan.parsing.auxiliary;
+
+import com.intellij.lang.PsiBuilder;
+import org.fandev.lang.fan.FanTokenTypes;
 
 
-/* Location:              /Users/dalgarins/Downloads/fan4idea-0.0.6/lib/fan4idea.jar!/org/fandev/lang/fan/parsing/auxiliary/Separators.class
- * Java compiler version: 5 (49.0)
- * JD-Core Version:       1.1.3
- */
+public class Separators {
+    public static boolean parse(PsiBuilder builder) {
+        boolean result = false;
+        while (!builder.eof() && FanTokenTypes.SEPARATOR.contains(builder.getTokenType())) {
+            builder.advanceLexer();
+            result = true;
+        }
+        return result;
+    }
+}
