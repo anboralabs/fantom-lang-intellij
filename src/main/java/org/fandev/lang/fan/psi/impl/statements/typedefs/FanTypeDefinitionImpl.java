@@ -4,6 +4,7 @@ import com.intellij.lang.ASTNode;
 import com.intellij.navigation.ItemPresentation;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
@@ -188,6 +189,8 @@ public abstract class FanTypeDefinitionImpl extends FanBaseElementImpl<FanTypeDe
         PsiElement element = null;
         try {
             element = findChildByType(FanElementTypes.NAME_ELEMENT);
+        } catch (ProcessCanceledException e) {
+            //TODO trick only to fix a temporal issue with ProcessCanceledException
         } catch (Exception e) {
             logger.error("Error looking for name element for " + this, e);
         }

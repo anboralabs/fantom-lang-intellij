@@ -18,6 +18,8 @@ import org.fandev.lang.fan.psi.api.statements.typeDefs.FanTypeDefinition;
 import org.fandev.lang.fan.psi.api.statements.typeDefs.members.FanMethod;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Optional;
+
 
 public class FanFileImpl
         extends PsiFileBase
@@ -113,7 +115,8 @@ public class FanFileImpl
     }
 
     public String getPackageName() {
-        return this.podName;
+        //TODO trick only to fix a temporal issue for pod null
+        return Optional.ofNullable(this.podName).orElse("");
     }
 
     public void setPackageName(String s) throws IncorrectOperationException {
