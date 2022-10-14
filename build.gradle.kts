@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "co.anbora.labs"
-version = "1.0-SNAPSHOT"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
@@ -49,6 +49,8 @@ tasks {
     patchPluginXml {
         sinceBuild.set("213")
         untilBuild.set("223.*")
+        changeNotes.set(file("src/main/html/change-notes.html").inputStream().readBytes().toString(Charsets.UTF_8))
+        pluginDescription.set(file("src/main/html/description.html").inputStream().readBytes().toString(Charsets.UTF_8))
     }
 
     publishPlugin {

@@ -1,25 +1,8 @@
-<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
     <id>co.anbora.labs.fantom-lang</id>
+    <name>Fantom Lang</name>
+    <vendor email="anboralabs@gmail.com" url="https://labs.anbora.co">Anbora-labs</vendor>
 
-    <!-- Public plugin name should be written in Title Case.
-         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
-    <name>Fantom-lang</name>
-
-    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor email="support@yourcompany.com" url="https://www.yourcompany.com">YourCompany</vendor>
-
-    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
-         Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
-         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
-    <description><![CDATA[
-    Enter short description for your plugin here.<br>
-    <em>most HTML tags may be used</em>
-  ]]></description>
-
-    <!-- Product and plugin compatibility requirements.
-         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.lang</depends>
     <depends>com.intellij.java</depends>
@@ -31,10 +14,19 @@
                   fieldName="INSTANCE" language="fantom_lang" extensions="fan"/>
         <lang.parserDefinition language="fantom_lang"
                                implementationClass="org.fandev.lang.fan.FantomParserDefinition"/>
+        <lang.syntaxHighlighterFactory language="fantom_lang"
+                                       implementationClass="org.fandev.lang.fan.highlighting.FantomSyntaxHighlighterFactory"/>
         <projectService serviceImplementation="org.fandev.index.FanIndex" />
+
+        <colorSettingsPage implementation="org.fandev.lang.fan.highlighting.FanColorsAndFontsPage"/>
 
         <stubElementTypeHolder class="org.fandev.lang.fan.FanElementTypes"/>
 
+        <syntaxHighlighter key="fantom_lang" factoryClass="org.fandev.lang.fan.highlighting.FanSyntaxHighlighterProvider"/>
+        <lang.commenter language="fantom_lang" implementationClass="org.fandev.lang.fan.highlighting.FanCommenter"/>
+        <lang.braceMatcher language="fantom_lang" implementationClass="org.fandev.lang.fan.highlighting.FanPairedBraceMatcher"/>
+
+        <quoteHandler fileType="fantom_lang" className="org.fandev.lang.fan.editor.FanQuoteHandler"/>
 
         <typeHierarchyProvider language="fantom_lang"
                                implementationClass="com.intellij.ide.hierarchy.type.JavaTypeHierarchyProvider"/>
