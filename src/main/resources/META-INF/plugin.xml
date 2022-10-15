@@ -25,6 +25,8 @@
         <syntaxHighlighter key="fantom_lang" factoryClass="org.fandev.lang.fan.highlighting.FanSyntaxHighlighterProvider"/>
         <lang.commenter language="fantom_lang" implementationClass="org.fandev.lang.fan.highlighting.FanCommenter"/>
         <lang.braceMatcher language="fantom_lang" implementationClass="org.fandev.lang.fan.highlighting.FanPairedBraceMatcher"/>
+        <lang.formatter language="fantom_lang" implementationClass="org.fandev.ide.formatter.FantomFormattingModelBuilder"/>
+        <lang.foldingBuilder language="fantom_lang" implementationClass="com.intellij.codeInsight.folding.impl.JavaFoldingBuilder"/>
 
         <quoteHandler fileType="fantom_lang" className="org.fandev.lang.fan.editor.FanQuoteHandler"/>
 

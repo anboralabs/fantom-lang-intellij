@@ -1,0 +1,290 @@
+{
+    parserClass="co.anbora.labs.firebase.lang.core.parser.FirebaseRulesParser"
+    psiClassPrefix="FireRules"
+    psiImplClassSuffix="Impl"
+
+    implements="co.anbora.labs.firebase.lang.core.psi.FireRuleElement"
+    extends="co.anbora.labs.firebase.lang.core.psi.FireRuleElementImpl"
+
+    psiPackage="co.anbora.labs.firebase.lang.core.psi"
+    psiImplPackage="co.anbora.labs.firebase.lang.core.psi.impl"
+    parserUtilClass="co.anbora.labs.firebase.lang.core.util.FirebaseParserUtil"
+
+    elementTypeHolderClass="co.anbora.labs.firebase.lang.core.psi.FireRulesTypes"
+
+    elementTypeClass="co.anbora.labs.firebase.lang.core.FireRuleElementType"
+    tokenTypeClass="co.anbora.labs.firebase.lang.core.FireRuleTokenType"
+
+    extends(".*Expr")=Expr
+    extends(".*Statement")=Statement
+    name(".*Expr")="expression"
+
+    tokens = [
+    WHITESPACE='regexp:[ \n\t\r\f]'
+
+    BOOL_LITERAL='regexp:(true)|(false)'
+    NUMBER_LITERAL='regexp:\d+(\.\d*)?'
+    STRING_LITERAL="regexp:('([^'\\]|\\.)*'|\"([^\"\\]|\\.)*\")"
+    PATH_VARIABLE_LITERAL="regexp:\{[_a-zA-Z0-9]+(=\*\*)?}"
+    PATH_BUILT_IN_LITERAL="regexp:\$\([._a-zA-Z0-9]+\)"
+    IDENTIFIER='regexp:[_a-zA-Z0-9]+'
+
+    L_BRACE          =  '{'
+    R_BRACE          =  '}'
+    L_BRACK          =  '['
+    R_BRACK          =  ']'
+    L_PAREN          =  '('
+    R_PAREN          =  ')'
+    COLON_COLON      =  '::'
+    COLON           =  ':'
+    SEMICOLON   =  ';'
+    COMMA       =  ','
+    LT            =  '<'
+    GT         =  '>'
+    AND = '&'
+    OR = '|'
+    EQ_EQ = '=='
+    NOT_EQ = '!='
+    EQ = '='
+    DOT         =  '.'
+
+    EXCL        =  '!'
+    PLUS        =  '+'
+    MINUS       =  '-'
+    XOR         =  '^'
+    MUL         =  '*'
+    DIV         =  '/'
+    MODULO         =  '%'
+    AT         =  '@'
+    HASH         =  '#'
+    Q_MARK       =  '?'
+
+    // Contextual tokens
+    LT_EQ           = '<='
+    LT_LT           = '<<'
+    GT_EQ           = '>='
+    GT_GT           = '>>'
+    OR_OR           = '||'
+    AND_AND         = '&&'
+
+    /*SLASH = '/'
+    op = '->'
+    COLON = ':'
+    COMMA = ','
+    EQ = '='
+    DOT = '.'
+    Q_MARK = '?'
+    DOT_COMMA = ';'
+    WILD_CARD = '=**'
+    MODULO         =  '%'
+    char = 'regexp:[\n\r\u2028\u2029]'
+    LINE_COMMENT='LINE_COMMENT'
+    BLOCK_COMMENT='BLOCK_COMMENT'*/
+
+    REQUEST  = 'request_kw'
+    RESOURCE = 'resource_kw'
+
+    //Permission keywords
+    EXITS   = 'exists_kw'
+    GET     = 'get_kw'
+    READ    = 'read_kw'
+    WRITE   = 'write_kw'
+    LIST    = 'list_kw'
+    CREATE  = 'create_kw'
+    UPDATE  = 'update_kw'
+    DELETE  = 'delete_kw'
+
+    //Types
+    BOOL        = 'bool_kw'
+    INT         = 'int_kw'
+    FLOAT       = 'float_kw'
+    NUMBER      = 'number_kw'
+    STRING      = 'string_kw'
+    MAP         = 'map_kw'
+    TIMESTAMP   = 'timestamp_kw'
+    DURATION    = 'duration_kw'
+    PATH        = 'path_kw'
+    LATLNG      = 'latlng_kw'
+    ]
+}
+
+<compilationUnit> ::=  <using>* <typeDef>* [<doc>]
+<using>           ::=  <usingPod> | <usingType> | <usingAs>
+<usingPod>        ::=  "using" <podSpec> <eos>
+<usingType>       ::=  "using" <podSpec> "::" <id> <eos>
+<usingAs>         ::=  "using" <podSpec> "::" <id> "as" <id> <eos>
+<podSpec>         ::=  <id> | <str> | <ffiPodSpec>
+<ffiPodSpec>      ::= "[" <id> "]" <id> ("." <id>)*
+
+//------------
+
+<typeDef>        ::=  <classDef> | <mixinDef> | <facetDef> | <enumDef>
+
+<classDef>       ::=  <typeHeader> "class" <id> [<inheritance>] "{" <slotDefs> "}"
+<mixinDef>       ::=  <typeHeader> "mixin" <id> [<inheritance>] "{" <slotDefs> "}"
+<facetDef>       ::=  <typeHeader> "facet" "class" <id> [<inheritance>] "{" <slotDefs> "}"
+<enumDef>        ::=  <typeHeader> "enum" "class" <id> [<inheritance>] "{" <enumValDefs> <slotDefs> "}"
+
+<typeHeader>     ::=  [<doc>] <facets> <typeFlags>
+<typeFlags>      ::=  <typeFlag>*
+<typeFlag>       ::=  <protection> | "abstract" | "final" | "const" | "native"
+<protection>     ::=  "public" | "protected" | "private" | "internal"
+<inheritance>    ::=  ":" <typeList>
+
+//------------
+
+<enumValDefs>    ::=  <enumValDef> ("," <enumValDef>)* <eos>
+<enumValDef>     ::=  <facets> <id> ["(" <args> ")"]
+
+<slotDefs>       ::=  <slotDef>*
+<slotDef>        ::=  <fieldDef> | <methodDef> | <ctorDef> | <staticInit>
+
+<fieldDef>       ::=  <facets> <fieldFlags> <type> <id> [":=" <expr>]
+                     [ "{" [<fieldGetter>] [<fieldSetter>] "}" ] <eos>
+<fieldFlags>     ::=  <fieldFlag>*
+<fieldFlag>      ::=  <protection> | "abstract" | "const" | "final" | "native" |
+                     "override" | "readonly" | "static" | "virtual"
+<fieldGetter>    ::=  "get" (<eos> | <block>)
+<fieldSetter>    ::=  <protection> "set" (<eos> | <block>)
+
+<methodDef>      ::=  <facets> <methodFlags> <type> <id> "(" <params> ")" <methodBody>
+<methodFlags>    ::=  <methodFlag>*
+<methodFlag>     ::=  <protection> | "abstract" | "native" | "once" |
+                     "override" | "static" | "virtual" | "final"
+<params>         ::=  [<param> ("," <param>)*]
+<param>          ::=  <type> <id> [":=" <expr>]
+<methodBody>     ::=  <eos> | ( "{" <stmts> "}" )
+
+<ctorDef>        ::=  <facets> <ctorFlags> "new" <id> "(" <params> ")" [ctorChain] <methodBody>
+<ctorFlags>      ::=  [<protection>]
+<ctorChain>      ::=  ":" <ctorChainThis> | <ctorChainSuper>
+<ctorChainThis>  ::=  "this" "." <id> "(" <args> ")"
+<ctorChainSuper> ::=  "super" ["." <id>] "(" <args> ")"
+
+<staticInit>     ::=  "static" "{" <stmts> "}"
+
+//--------------
+
+<facets>        ::= <facet>*
+<facet>         ::= "@" <simpleType> [<facetVals>]
+<facetVals>     ::= "{" <facetVal> (<eos> <facetVal>)* "}"
+<facetVal>      ::= <id> "=" <expr>
+
+//-------------
+
+<block>          ::=  <stmt> | ( "{" <stmts> "}" )
+<stmts>          ::=  <stmt>*
+<stmt>           ::=  <break> | <continue> | <for> | <if> | <return> | <switch> |
+                     <throw> | <while> | <try> | <exprStmt> | <localDef> | <itAdd>
+<break>          ::=  "break" <eos>
+<continue>       ::=  "continue" <eos>
+<for>            ::=  "for" "(" [<forInit>] ";" [<expr>] ";" [<expr>] ")" <block>
+<forInit>        ::=  <expr> | <localDef>
+<if>             ::=  "if" "(" <expr> ")" <block> [ "else" <block> ]
+<return>         ::=  "return" [<expr>] <eos>
+<throw>          ::=  "throw" <expr> <eos>
+<while>          ::=  "while" "(" <expr> ")" <block>
+<exprStmt>       ::=  <expr> <eos>
+<localDef>       ::=  [<type>] <id> [":=" <expr>] <eos>
+<itAdd>          ::=  <expr> ("," <expr>)* [","] <eos>
+
+<try>            ::=  "try" <block> <catch>* [<finally>]
+<catch>          ::=  "catch" [<catchDef>] <block>
+<catchDef>       ::=  "(" <type> <id> ")"
+<finally>        ::=  "finally" <block>
+
+<switch>         ::=  "switch" "(" <expr> ")" "{" <case>* [<default>] "}"
+<case>           ::=  "case" <expr> ":" <stmts>
+<default>        ::=  "default" ":" <stmts>
+
+//------------
+
+<expr>           ::=  <assignExpr>
+<assignExpr>     ::=  <ifExpr> [<assignOp> <assignExpr>]
+<assignOp>       ::=  "=" | "*=" | "/=" | "%=" | "+=" | "-="
+
+<ifExpr>         ::=  <ternaryExpr> | <elvisExpr>
+<ternaryExpr>    ::=  <condOrExpr> ["?" <ifExprBody> ":" <ifExprBody>]
+<elvisExpr>      ::=  <condOrExpr> "?:" <ifExprBody>
+<ifExprBody>     ::=  <condOrExpr> | <ifExprThrow>
+<ifExprThrow>    ::=  "throw" <expr>
+
+<condOrExpr>     ::=  <condAndExpr>  ("||" <condAndExpr>)*
+<condAndExpr>    ::=  <equalityExpr> ("&&" <equalityExpr>)*
+<equalityExpr>   ::=  <relationalExpr> [("==" | "!=" | "===" | "!==") <relationalExpr>]
+<relationalExpr> ::=  <typeCheckExpr> | <compareExpr>
+<typeCheckExpr>  ::=  <rangeExpr> [("is" | "as" | "isnot") <type>]
+<compareExpr>    ::=  <rangeExpr> [("<" | "<=" | ">" | ">=" | "<=>") <rangeExpr>]
+<rangeExpr>      ::=  <addExpr> ((".." | "..<") <addExpr>)*
+<addExpr>        ::=  <multExpr> (("+" | "-") <multExpr>)*
+<multExpr>       ::=  <parenExpr> (("*" | "/" | "%") <parenExpr>)*
+<parenExpr>      ::=  <unaryExpr> | <castExpr> | <groupedExpr>
+<castExpr>       ::=  "(" <type> ")" <parenExpr>
+<groupedExpr>    ::=  "(" <expr> ")" <termChain>*
+<unaryExpr>      ::=  <prefixExpr> | <termExpr> | <postfixExpr>
+<prefixExpr>     ::=  ("!" | "+" | "-" | "++" | "--") <parenExpr>
+<postfixExpr>    ::=  <termExpr> ("++" | "--")
+
+<termExpr>       ::=  <termBase> <termChain>*
+<termBase>       ::=  <literal> | <idExpr> | <typeBase>
+<typeBase>       ::=  <typeLiteral> | <slotLiteral> | <namedSuper> | <staticCall> |
+                     <dsl> | <closure> | <simple> | <ctorBlock>
+<typeLiteral>    ::=  <type> "#"
+<slotLiteral>    ::=  [<type>] "#" <id>
+<namedSuper>     ::=  <type> "." "super"
+<staticCall>     ::=  <type> "." <slotExpr>
+<dsl>            ::=  <type> "<|" <anyChar>* "|>"
+<simple>         ::=  <type> "(" <expr> ")"
+<ctorBlock>      ::=  <type> <itBlock>
+<termChain>      ::=  <dotCall> | <dynCall> | <safeDotCall> | <safeDynCall> |
+                     <indexExpr> | <callOp> | <itBlock>
+<itBlock>        ::=  "{" <stmts> "}"
+<dotCall>        ::=  "." <slotExpr>
+<dynCall>        ::=  "->" <slotExpr>
+<safeDotCall>    ::=  "?." <slotExpr>
+<safeDynCall>    ::=  "?->" <slotExpr>
+<idExpr>         ::=  <local> | <slotExpr>
+<slotExpr>       ::=  <field> | <call>
+<local>          ::=  <id>
+<field>          ::=  ["&"] <id>
+<call>           ::=  <id> ["(" <args> ")"] [<closure>]
+<args>           ::=  [<expr> ("," <expr>)*]
+<indexExpr>      ::=  "[" <expr> "]"
+<callOp>         ::=  "(" <args> ")" [<closure>]
+
+<literal>        ::=  "null" | "this" | "super" | "it" |
+                     <bool> | <int> | <float> | <decimal> | <str> |
+                     <duration> | <uri> | <list> | <map>
+<list>           ::=  [<type>] "[" <listItems> "]"
+<listItems>      ::=  "," | (<expr> ("," <expr>)*) [","]
+<map>            ::=  [<mapType>] "[" <mapItems> [","] "]"
+<mapItems>       ::=  ":" | (<mapPair> ("," <mapPair>)*)
+<mapPair>        ::=  <expr> ":" <expr>
+
+<closure>        ::=  <closureSig> "{" <stmts> "}"
+<closureSig>     ::=  "|" <closureParams> ["->" <type>] "|"
+<closureParams>  ::=  [<closureParam> ("," <closureParam>)*]
+<closureParam>   ::=  <formal> | <id>
+
+//--------------------
+
+<type>           ::=  <nullType> | <nonNullType>
+<nullType>       ::=  <nonNullType> "?"
+<nonNullType>    ::=  <simpleType> | <listType> | <mapType> | <funcType>
+<typeList>       ::=  <type> ("," <type>)*
+<simpleType>     ::=  <id> ["::" <id>]
+<listType>       ::=  <type> "[]"
+<mapType>        ::=  ["["] <type> ":" <type> ["]"]
+<funcType>       ::=  "|" [formals] ["->" <type>] "|"
+<formals>        ::=  [<formal> ("," <formal>)*]
+<formal>         ::=  <formalFull> | <formalInferred> | <formalTypeOnly>
+<formalFull>     ::=  <type> <id>
+<formalInferred> ::=  <id>
+<formalTypeOnly> ::=  <type>
+
+//-------------------
+
+<id>             ::= <idStart> (idChar)*
+<idStart>        ::= A-Z | a-z | "_"
+<idChar>         ::= A-Z | a-z | "_" | [0-9]
+<eos>            ::= ";" | "\n" | "}"
