@@ -10,34 +10,9 @@
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-        <fileType name="Fantom" implementationClass="org.fandev.lang.fan.FantomFileType"
+        <fileType name="Fantom" implementationClass="co.anbora.labs.fantom.lang.FantomFileType"
                   fieldName="INSTANCE" language="fantom_lang" extensions="fan"/>
         <lang.parserDefinition language="fantom_lang"
-                               implementationClass="org.fandev.lang.fan.FantomParserDefinition"/>
-        <lang.syntaxHighlighterFactory language="fantom_lang"
-                                       implementationClass="org.fandev.lang.fan.highlighting.FantomSyntaxHighlighterFactory"/>
-        <projectService serviceImplementation="org.fandev.index.FanIndex" />
-
-        <colorSettingsPage implementation="org.fandev.lang.fan.highlighting.FanColorsAndFontsPage"/>
-
-        <stubElementTypeHolder class="org.fandev.lang.fan.FanElementTypes"/>
-
-        <syntaxHighlighter key="fantom_lang" factoryClass="org.fandev.lang.fan.highlighting.FanSyntaxHighlighterProvider"/>
-        <lang.commenter language="fantom_lang" implementationClass="org.fandev.lang.fan.highlighting.FanCommenter"/>
-        <lang.braceMatcher language="fantom_lang" implementationClass="org.fandev.lang.fan.highlighting.FanPairedBraceMatcher"/>
-        <lang.formatter language="fantom_lang" implementationClass="org.fandev.ide.formatter.FantomFormattingModelBuilder"/>
-        <lang.foldingBuilder language="fantom_lang" implementationClass="com.intellij.codeInsight.folding.impl.JavaFoldingBuilder"/>
-
-        <quoteHandler fileType="fantom_lang" className="org.fandev.lang.fan.editor.FanQuoteHandler"/>
-
-        <typeHierarchyProvider language="fantom_lang"
-                               implementationClass="com.intellij.ide.hierarchy.type.JavaTypeHierarchyProvider"/>
-
-        <!--Stubs index-->
-        <stubIndex implementation="org.fandev.lang.fan.psi.stubs.index.FanShortClassNameIndex"/>
-        <stubIndex implementation="org.fandev.lang.fan.psi.stubs.index.FanSlotNameIndex"/>
-        <stubIndex implementation="org.fandev.lang.fan.psi.stubs.index.FanFacetNameSlotIndex"/>
-
-        <projectService serviceImplementation="org.fandev.lang.fan.psi.FanPsiElementFactory"/>
+                               implementationClass="co.anbora.labs.fantom.lang.FantomParserDefinition"/>
     </extensions>
 </idea-plugin>
