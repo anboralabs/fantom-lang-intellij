@@ -97,9 +97,14 @@ doc             ::= FANDOC_LINE_COMMENT
 
 typeDef        ::=  classDef | mixinDef | facetDef | enumDef
 
-classDef       ::=  typeHeader class id [inheritance] "{" slotDefs "}"
-mixinDef       ::=  typeHeader mixin id [inheritance] "{" slotDefs "}"
-facetDef       ::=  typeHeader facet class id [inheritance] "{" slotDefs "}"
+classDef                    ::=  typeHeader class id [inheritance] blockCode {pin=2}
+blockCode                   ::=  "{" slotDefs "}" { pin = 1 }
+
+private blockCode_item_recover ::= !("}" | <<eof>> | "@")
+
+
+mixinDef       ::=  typeHeader mixin id [inheritance] blockCode
+facetDef       ::=  typeHeader facet class id [inheritance] blockCode
 enumDef        ::=  typeHeader enum class id [inheritance] "{" enumValDefs slotDefs "}"
 
 typeHeader     ::=  [doc] facets typeFlags
@@ -114,25 +119,53 @@ enumValDefs    ::=  enumValDef ("," enumValDef)* eos
 enumValDef     ::=  facets id ["(" args ")"]
 
 slotDefs       ::=  slotDef*
-slotDef        ::=  fieldDef | methodDef | ctorDef | staticInit
+slotDef        ::=  !('}' | <<eof>>) slotDef_item {
+    pin=1
+    recoverWhile=class_item_recover
+}
+private class_item_first ::= methodFlag
+private class_item_recover ::= !('}' | <<eof>> | "@" | class_item_first)
+private slotDef_item ::= methodDef
+                        | ctorDef
+                        | staticInit
+                        | fieldDef
 
 fieldDef       ::=  facets fieldFlags type id [":=" expr]
-                     [ "{" [fieldGetter] [fieldSetter] "}" ] eos
+                     [ fieldDefBlock ]
+fieldDefBlock  ::=  "{" fieldDef_item "}" {pin=1}
+private fieldDef_item     ::= !("}" | <<eof>>) [fieldGetter] [fieldSetter] {
+    pin=1
+    recoverWhile=blockCode_item_recover
+}
+
 fieldFlags     ::=  fieldFlag*
 fieldFlag      ::=  protection | abstract | const | final | native |
                      override | readonly | static | virtual
 fieldGetter    ::=  get (eos | block)
 fieldSetter    ::=  protection set (eos | block)
 
-methodDef      ::=  facets methodFlags type id "(" params ")" methodBody
+methodDef ::= methodImplDef | abstractMethodDef
+abstractMethodDef ::= facets methodFlags type id itemParameterList
+methodImplDef      ::=  facets methodFlags type id itemParameterList methodBody
+itemParameterList  ::=  "(" params* ")" {pin=1}
+
 methodFlags    ::=  methodFlag*
 methodFlag     ::=  protection | abstract | native | once |
                      override | static | virtual | final
-params         ::=  [param ("," param)*]
-param          ::=  type id [":=" expr]
-methodBody     ::=  eos | ( "{" stmts "}" )
+params         ::=  !(')' | '{' | ';') [param] (',' | &')')
+{
+    pin=1
+    recoverWhile=params_recover
+}
+private params_recover ::= !(')' | '{' | ';' | type)
 
-ctorDef        ::=  facets ctorFlags [static] new id "(" params ")" [ctorChain] methodBody
+param          ::=  type id [":=" expr]
+methodBody     ::=  "{" stmts "}"
+{
+    pin=1
+}
+
+ctorDef        ::=  facets ctorFlags [static] new id itemParameterList [ctorChain] methodBody
 ctorFlags      ::=  [protection]
 ctorChain      ::=  ":" ctorChainThis | ctorChainSuper
 ctorChainThis  ::=  this "." id "(" args ")"
@@ -143,14 +176,19 @@ staticInit     ::=  static "{" stmts "}"
 //--------------
 
 facets        ::= facetItems*
-facetItems    ::= "@" simpleType [facetVals]
-facetVals     ::= "{" facetVal (eos facetVal)* "}"
+facetItems    ::= "@" simpleType [facetVals] {pin=1}
+facetVals     ::= "{" facetVal+ "}" {pin=1}
 facetVal      ::= id "=" expr
 
 //-------------
 
 block          ::=  stmt | ( "{" stmts "}" )
-stmts            ::=  stmt*
+stmts            ::=  !('}' | <<eof>>) stmt*
+{
+    pin=1
+    recoverWhile=blockCode_item_recover
+}
+
 stmt             ::=  breakStm | continueStm | forStm | ifStm | returnStm | switchStm |
                      throwStm | whileStm | tryStm | exprStmt | localDef | itAdd
 breakStm         ::=  break eos
