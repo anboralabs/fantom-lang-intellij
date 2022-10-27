@@ -86,10 +86,10 @@
 }
 
 compilationUnit ::=  usingDef* typeDef* doc*
-usingDef          ::=  usingPod | usingType | usingAs
-usingPod        ::=  using podSpec eos
-usingType       ::=  using podSpec "::" id eos
-usingAs         ::=  using podSpec "::" id as id eos
+usingDef          ::=  usingPod //| usingType | usingAs
+usingPod        ::=  using podSpec ['::' id [as id]]
+//usingType       ::=  using podSpec '::' id
+//usingAs         ::=  using podSpec '::' id as id
 podSpec         ::=  id | str | ffiPodSpec
 ffiPodSpec      ::= "[" id "]" id ("." id)*
 doc             ::= FANDOC_LINE_COMMENT
@@ -132,7 +132,7 @@ params         ::=  [param ("," param)*]
 param          ::=  type id [":=" expr]
 methodBody     ::=  eos | ( "{" stmts "}" )
 
-ctorDef        ::=  facets ctorFlags new id "(" params ")" [ctorChain] methodBody
+ctorDef        ::=  facets ctorFlags [static] new id "(" params ")" [ctorChain] methodBody
 ctorFlags      ::=  [protection]
 ctorChain      ::=  ":" ctorChainThis | ctorChainSuper
 ctorChainThis  ::=  this "." id "(" args ")"
@@ -249,11 +249,13 @@ closureParam   ::=  formal | id
 
 type           ::=  nullType | nonNullType
 nullType       ::=  nonNullType "?"
-nonNullType    ::=  simpleType | listType | mapType | funcType
+nonNullType    ::=  listType | mapType | funcType | simpleType
 typeList       ::=  type ("," type)*
 simpleType     ::=  id ["::" id]
-listType       ::=  type "[" "]"
-mapType        ::=  ["["] type ":" type ["]"]
+//listType       ::=  type "[" "]"
+//mapType        ::=  ["["] type ":" type ["]"]
+listType       ::=  simpleType "[" "]"
+mapType        ::=  ["["] simpleType ":" type ["]"]
 funcType       ::=  "|" [formals] ["->" type] "|"
 formals        ::=  [formal ("," formal)*]
 formal         ::=  formalFull | formalInferred | formalTypeOnly
@@ -266,4 +268,4 @@ formalTypeOnly ::=  type
 id             ::= IDENTIFIER
 //<idStart>        ::= ID_CHAR_START
 //<idChar>         ::= ID_CHAR_START | ID_CHAR_NUMBER
-eos            ::= ";" | NLS | "}"
+eos            ::= ";" | "}"

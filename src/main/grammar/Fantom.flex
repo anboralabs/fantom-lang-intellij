@@ -77,7 +77,7 @@ SHABENG="#!"[^\n]*
 <YYINITIAL> ":="                  { return COLON_EQ; }
 <YYINITIAL> "using"               { return USING; }
 
-<YYINITIAL> {NLS}+                { return NLS; }
+<YYINITIAL> {NLS}+                { return WHITE_SPACE; }
 <YYINITIAL> {WHITE_SPACE_CHAR}+   { return WHITE_SPACE; }
 
 <YYINITIAL> {INTEGER_LITERAL}     { yybegin(YYINITIAL); return INT_LITERAL; }
@@ -139,7 +139,7 @@ SHABENG="#!"[^\n]*
 
 /* Type Literals */
 
-<YYINITIAL> "Actor"                { yybegin(YYINITIAL); return FAN_SYS_TYPE; }
+/*<YYINITIAL> "Actor"                { yybegin(YYINITIAL); return FAN_SYS_TYPE; }
 <YYINITIAL> "ActorPool"                { yybegin(YYINITIAL); return FAN_SYS_TYPE; }
 <YYINITIAL> "ArgErr"                { yybegin(YYINITIAL); return FAN_SYS_TYPE; }
 <YYINITIAL> "Bool"                { yybegin(YYINITIAL); return FAN_SYS_TYPE; }
@@ -238,7 +238,7 @@ SHABENG="#!"[^\n]*
 <YYINITIAL> "Void"                { yybegin(YYINITIAL); return FAN_SYS_TYPE; }
 <YYINITIAL> "Weekday"                { yybegin(YYINITIAL); return FAN_SYS_TYPE; }
 <YYINITIAL> "Zip"                { yybegin(YYINITIAL); return FAN_SYS_TYPE; }
-<YYINITIAL> "ZipEntryFile"                { yybegin(YYINITIAL); return FAN_SYS_TYPE; }
+<YYINITIAL> "ZipEntryFile"                { yybegin(YYINITIAL); return FAN_SYS_TYPE; }*/
 
 <YYINITIAL> {IDENTIFIER}          { yybegin(YYINITIAL); return IDENTIFIER; }
 

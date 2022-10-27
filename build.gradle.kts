@@ -35,14 +35,22 @@ tasks {
     }
 
     val generateFantomLexer = task<org.jetbrains.grammarkit.tasks.GenerateLexerTask>("generateFantomLexer") {
-        source.set("src/main/grammar/Fan.flex")
-        targetDir.set("src/main/gen/org/fandev/lang/fan/")
-        targetClass.set("_FanLexer")
+        source.set("src/main/grammar/Fantom.flex")
+        targetDir.set("src/main/gen/co/anbora/labs/fantom/lang/")
+        targetClass.set("FanLexer")
+        purgeOldFiles.set(true)
+    }
+
+    val generateFantomParser = task<org.jetbrains.grammarkit.tasks.GenerateParserTask>("generateFantomParser") {
+        source.set("src/main/grammar/Fantom.bnf")
+        targetRoot.set("src/main/gen")
+        pathToParser.set("/co/anbora/labs/fantom/lang/core/parser/FantomParser.java")
+        pathToPsiRoot.set("/co/anbora/labs/fantom/lang/core/psi")
         purgeOldFiles.set(true)
     }
 
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        dependsOn(generateFantomLexer)
+        dependsOn(generateFantomLexer, generateFantomParser)
         kotlinOptions.jvmTarget = "11"
     }
 
