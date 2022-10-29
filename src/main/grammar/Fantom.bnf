@@ -124,7 +124,7 @@ slotDef        ::=  !('}' | <<eof>>) slotDef_item {
     recoverWhile=class_item_recover
 }
 private class_item_first ::= methodFlag
-private class_item_recover ::= !('}' | <<eof>> | "@" | class_item_first)
+private class_item_recover ::= !('}' | <<eof>> | "@" | class_item_first | IDENTIFIER)
 private slotDef_item ::= methodDef
                         | ctorDef
                         | staticInit
@@ -141,8 +141,8 @@ private fieldDef_item     ::= !("}" | <<eof>>) [fieldGetter] [fieldSetter] {
 fieldFlags     ::=  fieldFlag*
 fieldFlag      ::=  protection | abstract | const | final | native |
                      override | readonly | static | virtual
-fieldGetter    ::=  get (eos | block)
-fieldSetter    ::=  protection set (eos | block)
+fieldGetter    ::=  get (";" | block)
+fieldSetter    ::=  protection set (";" | block)
 
 methodDef ::= methodImplDef | abstractMethodDef
 abstractMethodDef ::= facets methodFlags type id itemParameterList
@@ -183,11 +183,17 @@ facetVal      ::= id "=" expr
 //-------------
 
 block          ::=  stmt | ( "{" stmts "}" )
-stmts            ::=  !('}' | <<eof>>) stmt*
+stmts            ::=  stmtDef*
+private stmtDef          ::=  !('}' | <<eof>>) stmt
 {
     pin=1
-    recoverWhile=blockCode_item_recover
+    recoverWhile=stmt_item_recover
 }
+private stmt_item_recover ::= !('}' | <<eof>> | break
+                                    | continue | for | if | return
+                                    | throw | while | try | catch
+                                    | finally | switch | case
+                                    | default | this | super | IDENTIFIER)
 
 stmt             ::=  breakStm | continueStm | forStm | ifStm | returnStm | switchStm |
                      throwStm | whileStm | tryStm | exprStmt | localDef | itAdd
@@ -199,8 +205,9 @@ ifStm            ::=  if "(" expr ")" block [ else block ]
 returnStm        ::=  return [expr] eos
 throwStm         ::=  throw expr eos
 whileStm         ::=  while "(" expr ")" block
-exprStmt       ::=  expr eos
-localDef       ::=  [type] id [":=" expr] eos
+exprStmt       ::=  expr
+localDef       ::=  (localDefBlock | type localDefBlock) [";"]
+private localDefBlock ::= id ":=" expr | id
 itAdd          ::=  expr ("," expr)* [","] eos
 
 tryStm           ::=  try block catchStm* [finallyStm]
@@ -216,7 +223,7 @@ defaultStm       ::=  default ":" stmts
 
 expr           ::=  assignExpr
 assignExpr     ::=  ifExpr [assignOp assignExpr]
-assignOp       ::=  "=" | "*=" | "/=" | "%=" | "+=" | "-="
+assignOp       ::=  ":=" | "=" | "*=" | "/=" | "%=" | "+=" | "-="
 
 ifExpr           ::=  ternaryExpr | elvisExpr
 ternaryExpr      ::=  condOrExpr ["?" ifExprBody ":" ifExprBody]
@@ -242,10 +249,10 @@ postfixExpr    ::=  termExpr ("++" | "--")
 
 termExpr       ::=  termBase termChain*
 termBase       ::=  literal | idExpr | typeBase
-typeBase       ::=  typeLiteral | slotLiteral | namedSuper | staticCall |
+typeBase       ::=  typeLiteral | namedSuper | staticCall |
                      dsl | closure | simple | ctorBlock
-typeLiteral    ::=  type "#"
-slotLiteral    ::=  [type] "#" id
+typeLiteral    ::=  type "#" id | "#" id | type "#"
+//slotLiteral    ::=  [type] "#" id
 namedSuper     ::=  type "." super
 staticCall     ::=  type "." slotExpr
 dsl            ::=  type DSL_STRING
@@ -265,7 +272,7 @@ field          ::=  ["&"] id
 call           ::=  id ["(" args ")"] [closure]
 args           ::=  [expr ("," expr)*]
 indexExpr      ::=  "[" expr "]"
-callOp         ::=  "(" args ")" [closure]
+callOp         ::=  "(" args ")" [closure] | closure
 
 literal        ::=  null | this | super | it |
                      bool | INT_LITERAL | FLOAT_LITERAL | DECIMAL_LITERAL | str |
@@ -289,21 +296,20 @@ type           ::=  nullType | nonNullType
 nullType       ::=  nonNullType "?"
 nonNullType    ::=  listType | mapType | funcType | simpleType
 typeList       ::=  type ("," type)*
-simpleType     ::=  id ["::" id]
+simpleType     ::=  nullableType ["::" nullableType]
 //listType       ::=  type "[" "]"
 //mapType        ::=  ["["] type ":" type ["]"]
+private nullableType  ::= id ["?"]
 listType       ::=  simpleType "[" "]"
 mapType        ::=  ["["] simpleType ":" type ["]"]
 funcType       ::=  "|" [formals] ["->" type] "|"
 formals        ::=  [formal ("," formal)*]
-formal         ::=  formalFull | formalInferred | formalTypeOnly
-formalFull     ::=  type id
-formalInferred ::=  id
-formalTypeOnly ::=  type
+formal         ::=  formalFull
+formalFull     ::=  type [id] | id
+//formalInferred ::=  id
+//formalTypeOnly ::=  type
 
 //-------------------
 
 id             ::= IDENTIFIER
-//<idStart>        ::= ID_CHAR_START
-//<idChar>         ::= ID_CHAR_START | ID_CHAR_NUMBER
-eos            ::= ";" | "}"
+eos            ::= [";"]

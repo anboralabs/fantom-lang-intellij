@@ -22,8 +22,8 @@ import static co.anbora.labs.fantom.lang.FantomParserDefinition.*;
     private boolean canEndWithNewline = false;
 %}
 
-DIGIT=[0-9"_"]
-HEX_DIGIT=[0-9A-Fa-f"_"]
+DIGIT=[0-9] | [0-9]["_"]
+HEX_DIGIT=[0-9A-Fa-f] | [0-9A-Fa-f]["_"]
 ONE_NL = \r|\n|\r\n  // NewLines
 WHITE_SPACE_CHAR=" "|\t|\f // Whitespaces
 NLS={ONE_NL}({ONE_NL}|{WHITE_SPACE_CHAR})*
@@ -274,7 +274,6 @@ SHABENG="#!"[^\n]*
 <YYINITIAL> "@"                   { yybegin(YYINITIAL); return AT; }
 <YYINITIAL> "?"                   { yybegin(YYINITIAL); return QUEST; }
 <YYINITIAL> "?:"                  { yybegin(YYINITIAL); return QUEST_COLON; }
-<YYINITIAL> ":="                  { yybegin(YYINITIAL); return COLON_EQ; }
 <YYINITIAL> "=="                  { yybegin(YYINITIAL); return EQEQ; }
 <YYINITIAL> "!="                  { yybegin(YYINITIAL); return NE; }
 <YYINITIAL> "==="                 { yybegin(YYINITIAL); return EQEQEQ; }
