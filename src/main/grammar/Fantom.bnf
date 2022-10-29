@@ -8,7 +8,7 @@
 
     psiPackage="co.anbora.labs.fantom.lang.core.psi"
     psiImplPackage="co.anbora.labs.fantom.lang.core.psi.impl"
-    parserUtilClass="co.anbora.labs.fantom.lang.core.util.FantomParserUtil"
+    parserUtilClass="co.anbora.labs.fantom.lang.core.FantomParserUtil"
 
     elementTypeHolderClass="co.anbora.labs.fantom.lang.core.psi.FantomTypes"
 
@@ -123,8 +123,8 @@ slotDef        ::=  !('}' | <<eof>>) slotDef_item {
     pin=1
     recoverWhile=class_item_recover
 }
-private class_item_first ::= methodFlag
-private class_item_recover ::= !('}' | <<eof>> | "@" | class_item_first | IDENTIFIER)
+private class_item_first ::= methodFlag | typeFlag | protection
+private class_item_recover ::= !('}' | <<eof>> | "@" | class_item_first | new | IDENTIFIER)
 private slotDef_item ::= methodDef
                         | ctorDef
                         | staticInit
@@ -189,14 +189,14 @@ private stmtDef          ::=  !('}' | <<eof>>) stmt
     pin=1
     recoverWhile=stmt_item_recover
 }
-private stmt_item_recover ::= !('}' | <<eof>> | break
+private stmt_item_recover ::= !('}' | <<eof>> | "@" | break
                                     | continue | for | if | return
                                     | throw | while | try | catch
                                     | finally | switch | case
                                     | default | this | super | IDENTIFIER)
 
 stmt             ::=  breakStm | continueStm | forStm | ifStm | returnStm | switchStm |
-                     throwStm | whileStm | tryStm | exprStmt | localDef | itAdd
+                     throwStm | whileStm | tryStm | exprStmt | itAdd
 breakStm         ::=  break eos
 continueStm      ::=  continue eos
 forStm           ::=  for "(" [forInit] ";" [expr] ";" [expr] ")" block
@@ -262,9 +262,9 @@ termChain      ::=  dotCall | dynCallStm | safeDotCallStm | safeDynCallStm |
                      indexExpr | callOp | itBlock
 itBlock        ::=  "{" stmts "}"
 dotCall        ::=  "." slotExpr
-dynCallStm       ::=  "->" slotExpr
+dynCallStm       ::=  dynCall slotExpr
 safeDotCallStm   ::=  "?." slotExpr
-safeDynCallStm   ::=  "?->" slotExpr
+safeDynCallStm   ::=  safeDynCall slotExpr
 idExpr         ::=  local | slotExpr
 slotExpr       ::=  field | call
 local          ::=  id
@@ -286,7 +286,7 @@ mapItems       ::=  ":" | (mapPair ("," mapPair)*)
 mapPair        ::=  expr ":" expr
 
 closure        ::=  closureSig "{" stmts "}"
-closureSig     ::=  "|" closureParams ["->" type] "|"
+closureSig     ::=  "|" closureParams [dynCall type] "|"
 closureParams  ::=  [closureParam ("," closureParam)*]
 closureParam   ::=  formal | id
 
@@ -302,7 +302,7 @@ simpleType     ::=  nullableType ["::" nullableType]
 private nullableType  ::= id ["?"]
 listType       ::=  simpleType "[" "]"
 mapType        ::=  ["["] simpleType ":" type ["]"]
-funcType       ::=  "|" [formals] ["->" type] "|"
+funcType       ::=  "|" [formals] [dynCall type] "|"
 formals        ::=  [formal ("," formal)*]
 formal         ::=  formalFull
 formalFull     ::=  type [id] | id
@@ -313,3 +313,6 @@ formalFull     ::=  type [id] | id
 
 id             ::= IDENTIFIER
 eos            ::= [";"]
+
+private dynCall   ::= <<dynCallImpl>>
+private safeDynCall   ::= <<safeDynCallImpl>>

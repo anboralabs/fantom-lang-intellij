@@ -259,9 +259,9 @@ SHABENG="#!"[^\n]*
 <YYINITIAL> "."                   { yybegin(YYINITIAL); return DOT; }
 <YYINITIAL> ".."                  { yybegin(YYINITIAL); return RANGE_SEP_INCL; }
 <YYINITIAL> "..<"                 { yybegin(YYINITIAL); return RANGE_SEP_EXCL; }
-<YYINITIAL> "->"                  { yybegin(YYINITIAL); return DYN_CALL; }
+//<YYINITIAL> "->"                  { yybegin(YYINITIAL); return DYN_CALL; }
 <YYINITIAL> "?."                  { yybegin(YYINITIAL); return SAFE_DOT; }
-<YYINITIAL> "?->"                 { yybegin(YYINITIAL); return SAFE_DYN_CALL; }
+//<YYINITIAL> "?->"                 { yybegin(YYINITIAL); return SAFE_DYN_CALL; }
 
 <YYINITIAL> "="                   { yybegin(YYINITIAL); return EQ; }
 
