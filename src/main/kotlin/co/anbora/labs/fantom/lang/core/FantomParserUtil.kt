@@ -15,6 +15,9 @@ object FantomParserUtil: GeneratedParserUtilBase() {
     fun safeDynCallImpl(b: PsiBuilder, level: Int): Boolean = collapse(b, SAFE_DYN_CALL, QUEST, MINUS, GT)
 
     @JvmStatic
+    fun elvisOpImpl(b: PsiBuilder, level: Int): Boolean = collapse(b, QUEST_COLON, QUEST, COLON)
+
+    @JvmStatic
     private fun collapse(b: PsiBuilder, tokenType: IElementType, vararg parts: IElementType): Boolean {
         // We do not want whitespace between parts, so firstly we do raw lookup for each part,
         // and when we make sure that we have desired token, we consume and collapse it.

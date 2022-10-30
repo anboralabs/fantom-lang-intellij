@@ -100,9 +100,6 @@ typeDef        ::=  classDef | mixinDef | facetDef | enumDef
 classDef                    ::=  typeHeader class id [inheritance] blockCode {pin=2}
 blockCode                   ::=  "{" slotDefs "}" { pin = 1 }
 
-private blockCode_item_recover ::= !("}" | <<eof>> | "@")
-
-
 mixinDef       ::=  typeHeader mixin id [inheritance] blockCode
 facetDef       ::=  typeHeader facet class id [inheritance] blockCode
 enumDef        ::=  typeHeader enum class id [inheritance] "{" enumValDefs slotDefs "}"
@@ -115,7 +112,7 @@ inheritance    ::=  ":" typeList
 
 //------------
 
-enumValDefs    ::=  enumValDef ("," enumValDef)* eos
+enumValDefs    ::=  enumValDef ("," enumValDef)* [";"]
 enumValDef     ::=  facets id ["(" args ")"]
 
 slotDefs       ::=  slotDef*
@@ -135,18 +132,19 @@ fieldDef       ::=  facets fieldFlags type id [":=" expr]
 fieldDefBlock  ::=  "{" fieldDef_item "}" {pin=1}
 private fieldDef_item     ::= !("}" | <<eof>>) [fieldGetter] [fieldSetter] {
     pin=1
-    recoverWhile=blockCode_item_recover
+    recoverWhile=field_item_recover
 }
+private field_item_recover ::= !("}" | <<eof>> | get | set | fieldFlag)
 
 fieldFlags     ::=  fieldFlag*
 fieldFlag      ::=  protection | abstract | const | final | native |
                      override | readonly | static | virtual
-fieldGetter    ::=  get (";" | block)
-fieldSetter    ::=  protection set (";" | block)
+fieldGetter    ::=  [protection] get [";" | block]
+fieldSetter    ::=  [protection] set [";" | block]
 
 methodDef ::= methodImplDef | abstractMethodDef
 abstractMethodDef ::= facets methodFlags type id itemParameterList
-methodImplDef      ::=  facets methodFlags type id itemParameterList methodBody
+methodImplDef      ::=  facets methodFlags type id itemParameterList codeBlock
 itemParameterList  ::=  "(" params* ")" {pin=1}
 
 methodFlags    ::=  methodFlag*
@@ -160,18 +158,18 @@ params         ::=  !(')' | '{' | ';') [param] (',' | &')')
 private params_recover ::= !(')' | '{' | ';' | type)
 
 param          ::=  type id [":=" expr]
-methodBody     ::=  "{" stmts "}"
+codeBlock      ::=  "{" stmts "}"
 {
     pin=1
 }
 
-ctorDef        ::=  facets ctorFlags [static] new id itemParameterList [ctorChain] methodBody
+ctorDef        ::=  facets ctorFlags [static] new id itemParameterList [ctorChain] codeBlock
 ctorFlags      ::=  [protection]
 ctorChain      ::=  ":" ctorChainThis | ctorChainSuper
 ctorChainThis  ::=  this "." id "(" args ")"
 ctorChainSuper ::=  super ["." id] "(" args ")"
 
-staticInit     ::=  static "{" stmts "}"
+staticInit     ::=  static codeBlock
 
 //--------------
 
@@ -182,7 +180,7 @@ facetVal      ::= id "=" expr
 
 //-------------
 
-block          ::=  stmt | ( "{" stmts "}" )
+block          ::=  stmt | codeBlock
 stmts            ::=  stmtDef*
 private stmtDef          ::=  !('}' | <<eof>>) stmt
 {
@@ -193,22 +191,23 @@ private stmt_item_recover ::= !('}' | <<eof>> | "@" | break
                                     | continue | for | if | return
                                     | throw | while | try | catch
                                     | finally | switch | case
-                                    | default | this | super | IDENTIFIER)
+                                    | default | this | super
+                                    | IDENTIFIER)
 
 stmt             ::=  breakStm | continueStm | forStm | ifStm | returnStm | switchStm |
                      throwStm | whileStm | tryStm | exprStmt | itAdd
-breakStm         ::=  break eos
-continueStm      ::=  continue eos
+breakStm         ::=  break [";"]
+continueStm      ::=  continue [";"]
 forStm           ::=  for "(" [forInit] ";" [expr] ";" [expr] ")" block
 forInit        ::=  expr | localDef
 ifStm            ::=  if "(" expr ")" block [ else block ]
-returnStm        ::=  return [expr] eos
-throwStm         ::=  throw expr eos
+returnStm        ::=  return [expr] [";"]
+throwStm         ::=  throw expr [";"]
 whileStm         ::=  while "(" expr ")" block
-exprStmt       ::=  expr
+exprStmt       ::=  expr [";"]
 localDef       ::=  (localDefBlock | type localDefBlock) [";"]
 private localDefBlock ::= id ":=" expr | id
-itAdd          ::=  expr ("," expr)* [","] eos
+itAdd          ::=  expr ("," expr)* [","] [";"]
 
 tryStm           ::=  try block catchStm* [finallyStm]
 catchStm         ::=  catch [catchDef] block
@@ -225,18 +224,18 @@ expr           ::=  assignExpr
 assignExpr     ::=  ifExpr [assignOp assignExpr]
 assignOp       ::=  ":=" | "=" | "*=" | "/=" | "%=" | "+=" | "-="
 
-ifExpr           ::=  ternaryExpr | elvisExpr
-ternaryExpr      ::=  condOrExpr ["?" ifExprBody ":" ifExprBody]
-elvisExpr        ::=  condOrExpr "?:" ifExprBody
+ifExpr           ::=  condOrExpr ["?:" ifExprBody | "?" ifExprBody ":" ifExprBody]
+//ternaryExpr      ::=  condOrExpr ["?" ifExprBody ":" ifExprBody]
+//elvisExpr        ::=  condOrExpr "?:" ifExprBody
 ifExprBody     ::=  condOrExpr | ifExprThrow
 ifExprThrow    ::=  throw expr
 
 condOrExpr     ::=  condAndExpr  ("||" condAndExpr)*
 condAndExpr    ::=  equalityExpr ("&&" equalityExpr)*
 equalityExpr   ::=  relationalExpr [("==" | "!=" | "===" | "!==") relationalExpr]
-relationalExpr ::=  typeCheckExpr | compareExpr
-typeCheckExpr  ::=  rangeExpr [(is | as | isnot) type]
-compareExpr    ::=  rangeExpr [("<" | "<=" | ">" | ">=" | "<=>") rangeExpr]
+relationalExpr ::=  rangeExpr [(is | as | isnot) type | ("<" | "<=" | ">" | ">=" | "<=>") rangeExpr]
+//typeCheckExpr  ::=  rangeExpr [(is | as | isnot) type]
+//compareExpr    ::=  rangeExpr [("<" | "<=" | ">" | ">=" | "<=>") rangeExpr]
 rangeExpr      ::=  addExpr ((".." | "..<") addExpr)*
 addExpr        ::=  multExpr (("+" | "-") multExpr)*
 multExpr         ::=  parenExpr (("*" | "/" | "%") parenExpr)*
@@ -248,10 +247,10 @@ prefixExpr     ::=  ("!" | "+" | "-" | "++" | "--") parenExpr
 postfixExpr    ::=  termExpr ("++" | "--")
 
 termExpr       ::=  termBase termChain*
-termBase       ::=  literal | idExpr | typeBase
+termBase       ::=  literal | typeBase | idExpr
 typeBase       ::=  typeLiteral | namedSuper | staticCall |
                      dsl | closure | simple | ctorBlock
-typeLiteral    ::=  type "#" id | "#" id | type "#"
+typeLiteral    ::=   [type] "#" id | type "#"
 //slotLiteral    ::=  [type] "#" id
 namedSuper     ::=  type "." super
 staticCall     ::=  type "." slotExpr
@@ -260,7 +259,7 @@ simple         ::=  type "(" expr ")"
 ctorBlock      ::=  type itBlock
 termChain      ::=  dotCall | dynCallStm | safeDotCallStm | safeDynCallStm |
                      indexExpr | callOp | itBlock
-itBlock        ::=  "{" stmts "}"
+itBlock        ::=  codeBlock
 dotCall        ::=  "." slotExpr
 dynCallStm       ::=  dynCall slotExpr
 safeDotCallStm   ::=  "?." slotExpr
@@ -285,7 +284,7 @@ map            ::=  [mapType] "[" mapItems [","] "]"
 mapItems       ::=  ":" | (mapPair ("," mapPair)*)
 mapPair        ::=  expr ":" expr
 
-closure        ::=  closureSig "{" stmts "}"
+closure        ::=  closureSig codeBlock
 closureSig     ::=  "|" closureParams [dynCall type] "|"
 closureParams  ::=  [closureParam ("," closureParam)*]
 closureParam   ::=  formal | id
@@ -312,7 +311,7 @@ formalFull     ::=  type [id] | id
 //-------------------
 
 id             ::= IDENTIFIER
-eos            ::= [";"]
 
 private dynCall   ::= <<dynCallImpl>>
 private safeDynCall   ::= <<safeDynCallImpl>>
+//private elvisOp   ::= <<elvisOpImpl>>
