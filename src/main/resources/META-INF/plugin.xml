@@ -14,5 +14,7 @@
                   fieldName="INSTANCE" language="fantom_lang" extensions="fan"/>
         <lang.parserDefinition language="fantom_lang"
                                implementationClass="co.anbora.labs.fantom.lang.FantomParserDefinition"/>
+        <lang.syntaxHighlighterFactory language="fantom_lang"
+                                       implementationClass="co.anbora.labs.fantom.ide.highlight.FantomSyntaxHighlighterFactory"/>
     </extensions>
 </idea-plugin>
