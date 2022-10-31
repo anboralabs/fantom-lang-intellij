@@ -9,6 +9,35 @@ import static co.anbora.labs.fantom.lang.FantomParserDefinition.*;
 
 %%
 
+%{
+    /**
+        * Dedicated storage for starting position of some previously successful
+        * match
+    */
+    private int zzPostponedMarkedPos = -1;
+
+    /**
+        * Dedicated nested-comment level counter
+    */
+    private int zzNestedCommentLevel = 0;
+%}
+
+%{
+  public FanLexer() {
+    this(null);
+  }
+
+  IElementType imbueDslString() {
+      assert(zzNestedCommentLevel == 0);
+      yybegin(YYINITIAL);
+
+      zzStartRead = zzPostponedMarkedPos;
+      zzPostponedMarkedPos = -1;
+
+      return DSL_STRING;
+  }
+%}
+
 %public
 %class FanLexer
 %implements FlexLexer
@@ -18,9 +47,7 @@ import static co.anbora.labs.fantom.lang.FantomParserDefinition.*;
 %eof{  return;
 %eof}
 
-%{
-    private boolean canEndWithNewline = false;
-%}
+%s STRING_DSL
 
 DIGIT=[0-9] | [0-9]["_"]
 HEX_DIGIT=[0-9A-Fa-f] | [0-9A-Fa-f]["_"]
@@ -60,7 +87,7 @@ DURATION_POINT_LITERAL4=({DIGIT})+({DURATION_MARK_LITERAL})
 
 URI_LITERAL="`"([^\\"`"] | \\\` | \\[^"`"])*"`"
 CHAR_LITERAL="'"([^\\"'"] | \\\' | \\[^"'"])*"'"
-DSL_STRING="<|"[^"|>"]*"|>"
+//DSL_STRING="<|"[^"|>"]*"|>"
 TRIPLE_STRING_LITERAL=\"\"\"([^\"] | \"(\")?[^\"])*\"\"\"
 STRING_LITERAL=\"([^\\\"] | \\\" | \\[^\"])*\"
 
@@ -74,6 +101,27 @@ SHABENG="#!"[^\n]*
 
 %%
 
+<YYINITIAL> {
+      "<|"                 {
+          yybegin(STRING_DSL); yypushback(2);
+       }
+}
+
+<STRING_DSL> {
+      "<|"    {
+              if (zzNestedCommentLevel++ == 0)
+                  zzPostponedMarkedPos = zzStartRead;
+          }
+      "|>"    {
+              if (--zzNestedCommentLevel == 0)
+                  return imbueDslString();
+          }
+      <<EOF>> {
+              zzNestedCommentLevel = 0; return imbueDslString();
+          }
+      [^]     { }
+}
+
 <YYINITIAL> ":="                  { return COLON_EQ; }
 <YYINITIAL> "using"               { return USING; }
 
@@ -86,7 +134,7 @@ SHABENG="#!"[^\n]*
 <YYINITIAL> {DURATION_LITERAL}    { yybegin(YYINITIAL); return DURATION_LITERAL; }
 
 <YYINITIAL> {URI_LITERAL}         { yybegin(YYINITIAL); return URI_LITERAL; }
-<YYINITIAL> {DSL_STRING}  { yybegin(YYINITIAL); return DSL_STRING; }
+//<YYINITIAL> {DSL_STRING}  { yybegin(YYINITIAL); return DSL_STRING; }
 <YYINITIAL> {CHAR_LITERAL}        { yybegin(YYINITIAL); return CHAR_LITERAL; }
 <YYINITIAL> {TRIPLE_STRING_LITERAL}      { yybegin(YYINITIAL); return STRING_LITERAL; }
 <YYINITIAL> {STRING_LITERAL}      { yybegin(YYINITIAL); return STRING_LITERAL; }

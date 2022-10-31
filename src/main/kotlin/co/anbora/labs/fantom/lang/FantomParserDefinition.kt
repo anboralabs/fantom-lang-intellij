@@ -40,6 +40,7 @@ class FantomParserDefinition: ParserDefinition {
         @JvmField val END_OF_LINE_COMMENT = FantomTokenType("END_OF_LINE_COMMENT")
         //@JvmField val FANDOC_LINE_COMMENT = FantomTokenType("FANDOC_LINE_COMMENT")
         @JvmField val SHABENG = FantomTokenType("SHABENG")
+        //@JvmField val DSL_STRING = FantomTokenType("DSL_STRING")
 
         @JvmField val FAN_SYS_TYPE = FantomTokenType("FAN_SYS_TYPE")
     }
