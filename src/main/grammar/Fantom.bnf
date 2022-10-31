@@ -18,6 +18,9 @@
 
     tokens = [
 
+        GET                 = 'get_kw'
+        SET                 = 'set_kw'
+
         OR                  = '|'
         LPAR                = '('
         RPAR                = ')'
@@ -123,12 +126,23 @@ slotDef        ::=  !('}' | <<eof>>) slotDef_item {
 private class_item_first ::= methodFlag | typeFlag | protection
 private class_item_recover ::= !('}' | <<eof>> | "@" | class_item_first | new | IDENTIFIER)
 private slotDef_item ::= methodDef
+                        | fieldDef
                         | ctorDef
                         | staticInit
-                        | fieldDef
 
+/*private fieldDec  ::=  facets (methodFlag | fieldFlags) type (methodComp | fieldComp)
+private fieldComp   ::= id [":=" expr] [ fieldDefBlock ]
+private methodComp  ::= id itemParameterList [codeBlock]
+
+fieldDef         ::= fieldDec*/
+
+/*fieldDef       ::=  facets fieldFlags type id ":=" expr fieldDefBlock
+                  | facets fieldFlags type id ":=" expr
+                  | facets fieldFlags type id fieldDefBlock
+                  | facets fieldFlags type id*/
 fieldDef       ::=  facets fieldFlags type id [":=" expr]
                      [ fieldDefBlock ]
+
 fieldDefBlock  ::=  "{" fieldDef_item "}" {pin=1}
 private fieldDef_item     ::= !("}" | <<eof>>) [fieldGetter] [fieldSetter] {
     pin=1
@@ -204,9 +218,9 @@ ifStm            ::=  if "(" expr ")" block [ else block ]
 returnStm        ::=  return [expr] [";"]
 throwStm         ::=  throw expr [";"]
 whileStm         ::=  while "(" expr ")" block
-exprStmt       ::=  expr [";"]
-localDef       ::=  (localDefBlock | type localDefBlock) [";"]
-private localDefBlock ::= id ":=" expr | id
+exprStmt       ::=  localDef | expr [";"]
+localDef       ::=  localDefBlock [";"]
+private localDefBlock ::= type id ":=" expr | id ":=" expr | type id
 itAdd          ::=  expr ("," expr)* [","] [";"]
 
 tryStm           ::=  try block catchStm* [finallyStm]
@@ -222,7 +236,7 @@ defaultStm       ::=  default ":" stmts
 
 expr           ::=  assignExpr
 assignExpr     ::=  ifExpr [assignOp assignExpr]
-assignOp       ::=  ":=" | "=" | "*=" | "/=" | "%=" | "+=" | "-="
+assignOp       ::=  "=" | "*=" | "/=" | "%=" | "+=" | "-="
 
 ifExpr           ::=  condOrExpr ["?:" ifExprBody | "?" ifExprBody ":" ifExprBody]
 //ternaryExpr      ::=  condOrExpr ["?" ifExprBody ":" ifExprBody]
@@ -314,4 +328,6 @@ id             ::= IDENTIFIER
 
 private dynCall   ::= <<dynCallImpl>>
 private safeDynCall   ::= <<safeDynCallImpl>>
+private get       ::= <<getKeyword>>
+private set       ::= <<setKeyword>>
 //private elvisOp   ::= <<elvisOpImpl>>

@@ -110,7 +110,6 @@ SHABENG="#!"[^\n]*
 <YYINITIAL> "final"               { yybegin(YYINITIAL); return FINAL; }
 <YYINITIAL> "finally"             { yybegin(YYINITIAL); return FINALLY; }
 <YYINITIAL> "for"                 { yybegin(YYINITIAL); return FOR; }
-<YYINITIAL> "get"                 { yybegin(YYINITIAL); return GET; }
 //<YYINITIAL> "foreach"             { yybegin(YYINITIAL); return FOREACH; }
 <YYINITIAL> "if"                  { yybegin(YYINITIAL); return IF; }
 <YYINITIAL> "internal"            { yybegin(YYINITIAL); return INTERNAL; }
@@ -127,7 +126,6 @@ SHABENG="#!"[^\n]*
 <YYINITIAL> "public"              { yybegin(YYINITIAL); return PUBLIC; }
 <YYINITIAL> "readonly"            { yybegin(YYINITIAL); return READONLY; }
 <YYINITIAL> "return"              { yybegin(YYINITIAL); return RETURN; }
-<YYINITIAL> "set"                 { yybegin(YYINITIAL); return SET; }
 <YYINITIAL> "static"              { yybegin(YYINITIAL); return STATIC; }
 <YYINITIAL> "super"               { yybegin(YYINITIAL); return SUPER; }
 <YYINITIAL> "switch"              { yybegin(YYINITIAL); return SWITCH; }

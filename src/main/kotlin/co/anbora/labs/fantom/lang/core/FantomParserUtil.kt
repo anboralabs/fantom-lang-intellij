@@ -15,7 +15,12 @@ object FantomParserUtil: GeneratedParserUtilBase() {
     fun safeDynCallImpl(b: PsiBuilder, level: Int): Boolean = collapse(b, SAFE_DYN_CALL, QUEST, MINUS, GT)
 
     @JvmStatic
-    fun elvisOpImpl(b: PsiBuilder, level: Int): Boolean = collapse(b, QUEST_COLON, QUEST, COLON)
+    fun getKeyword(b: PsiBuilder, level: Int): Boolean =
+        contextualKeyword(b, "get", GET)
+
+    @JvmStatic
+    fun setKeyword(b: PsiBuilder, level: Int): Boolean =
+        contextualKeyword(b, "set", SET)
 
     @JvmStatic
     private fun collapse(b: PsiBuilder, tokenType: IElementType, vararg parts: IElementType): Boolean {
@@ -29,5 +34,21 @@ object FantomParserUtil: GeneratedParserUtilBase() {
         PsiBuilderUtil.advance(b, expectedLength)
         marker.collapse(tokenType)
         return true
+    }
+
+    private fun contextualKeyword(
+        b: PsiBuilder,
+        keyword: String,
+        elementType: IElementType,
+        nextElementPredicate: (IElementType?) -> Boolean = { it !in tokenSetOf() }
+    ): Boolean {
+        if (b.tokenType == elementType ||
+            b.tokenType == IDENTIFIER && b.tokenText == keyword && nextElementPredicate(b.lookAhead(1))
+        ) {
+            b.remapCurrentToken(elementType)
+            b.advanceLexer();
+            return true
+        }
+        return false
     }
 }
