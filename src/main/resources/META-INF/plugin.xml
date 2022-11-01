@@ -16,5 +16,18 @@
                                implementationClass="co.anbora.labs.fantom.lang.FantomParserDefinition"/>
         <lang.syntaxHighlighterFactory language="fantom_lang"
                                        implementationClass="co.anbora.labs.fantom.ide.highlight.FantomSyntaxHighlighterFactory"/>
+        <lang.braceMatcher language="fantom_lang" implementationClass="co.anbora.labs.fantom.ide.typing.FantomBraceMatcher"/>
+        <lang.foldingBuilder language="fantom_lang" implementationClass="co.anbora.labs.fantom.ide.folding.FantomFoldingBuilder"/>
+
+        <annotator language="fantom_lang"
+                   implementationClass="co.anbora.labs.fantom.ide.annotator.HighlightingAnnotator"/>
     </extensions>
+
+    <actions>
+        <action id="Fantom.NewFantomClass"
+                class="co.anbora.labs.fantom.ide.actions.CreateNewClassAction"
+                text="Fantom Class"
+                description="Create new Fantom class">
+        </action>
+    </actions>
 </idea-plugin>

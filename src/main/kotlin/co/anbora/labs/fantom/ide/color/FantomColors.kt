@@ -13,6 +13,18 @@ enum class FantomColors(humanName: String, default: TextAttributesKey) {
 
     KEY_WORD("Keywords", DefaultLanguageHighlighterColors.KEYWORD),
     BAD_CHAR("Bad Character", HighlighterColors.BAD_CHARACTER),
+    ANNOTATIONS("Annotations",
+        TextAttributesKey.createTempTextAttributesKey(
+        "FANTOM_ANNOTATIONS",
+        TextAttributes(Color.decode("#BBB529"), null, null, null, Font.PLAIN)
+    )),
+    METHOD_CALL(
+        "Method Call",
+        TextAttributesKey.createTempTextAttributesKey(
+            "FANTOM_METHOD_CALL",
+            TextAttributes(Color.decode("#E8C32A"), null, null, null, Font.PLAIN)
+        )
+    ),
     TYPES(
         "Types",
         TextAttributesKey.createTempTextAttributesKey(
