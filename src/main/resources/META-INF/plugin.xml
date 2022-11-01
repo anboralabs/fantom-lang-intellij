@@ -14,6 +14,7 @@
                   fieldName="INSTANCE" language="fantom_lang" extensions="fan"/>
         <lang.parserDefinition language="fantom_lang"
                                implementationClass="co.anbora.labs.fantom.lang.FantomParserDefinition"/>
+        <lang.commenter language="fantom_lang" implementationClass="co.anbora.labs.fantom.ide.commenter.FantomCommenter"/>
         <lang.syntaxHighlighterFactory language="fantom_lang"
                                        implementationClass="co.anbora.labs.fantom.ide.highlight.FantomSyntaxHighlighterFactory"/>
         <lang.braceMatcher language="fantom_lang" implementationClass="co.anbora.labs.fantom.ide.typing.FantomBraceMatcher"/>
