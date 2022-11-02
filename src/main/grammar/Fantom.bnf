@@ -1,0 +1,346 @@
+{
+    parserClass="co.anbora.labs.fantom.lang.core.parser.FantomParser"
+    psiClassPrefix="Fantom"
+    psiImplClassSuffix="Impl"
+
+    implements="co.anbora.labs.fantom.lang.core.psi.FantomElement"
+    extends="co.anbora.labs.fantom.lang.core.psi.FantomElementImpl"
+
+    psiPackage="co.anbora.labs.fantom.lang.core.psi"
+    psiImplPackage="co.anbora.labs.fantom.lang.core.psi.impl"
+    parserUtilClass="co.anbora.labs.fantom.lang.core.FantomParserUtil"
+
+    elementTypeHolderClass="co.anbora.labs.fantom.lang.core.psi.FantomTypes"
+
+    elementTypeClass="co.anbora.labs.fantom.lang.core.FantomElementType"
+    tokenTypeClass="co.anbora.labs.fantom.lang.core.FantomTokenType"
+
+    extends(".*Stm")=stmt
+
+    tokens = [
+
+        GET                 = 'get_kw'
+        SET                 = 'set_kw'
+
+        OR                  = '|'
+        LPAR                = '('
+        RPAR                = ')'
+        LBRACE              = '{'
+        RBRACE              = '}'
+        LBRACKET            = '['
+        RBRACKET            = ']'
+
+        DOT                 = '.'
+        RANGE_SEP_INCL      = '..'
+        RANGE_SEP_EXCL      = '..<'
+        DYN_CALL            = '->'
+        SAFE_DOT            = '?.'
+        SAFE_DYN_CALL       = '?->'
+
+        EQ                  = '='
+
+        SEMICOLON           = ';'
+        COMMA               = ','
+
+        COLON_COLON         = '::'
+        COLON               = ':'
+        SHARP               = '#'
+        AT                  = "@"
+        QUEST               = "?"
+        QUEST_COLON         = "?:"
+        COLON_EQ            = ':='
+        EQEQ                = "=="
+        NE                  = "!="
+        EQEQEQ              = "==="
+        NEEQ                = "!=="
+
+        LT                  = "<"
+        GT                  = ">"
+        LE                  = "<="
+        GE                  = ">="
+        COMPARE             = "<=>"
+        PLUS                = "+"
+        MINUS               = "-"
+        MULT                = "*"
+        PERC                = "%"
+        PLUSPLUS            = "++"
+        MINUSMINUS          = "--"
+        LTLT                = "<<"
+        GTGT                = ">>"
+        AND                 = "&"
+        XOR                 = "^"
+        EXCL                = "!"
+        TILDE               = "~"
+        ANDAND              = "&&"
+        OROR                = "||"
+        PLUSEQ              = "+="
+        MINUSEQ             = "-="
+        MULTEQ              = "*="
+        PERCEQ              = "%="
+        LTLTEQ              = "<<="
+        GTGTEQ              = ">>="
+        ANDEQ               = "&="
+        OREQ                = "|="
+        XOREQ               = "^="
+        DIV                 = "/"
+        DIVEQ               = "/="
+
+    ]
+
+}
+
+compilationUnit ::=  usingDef* typeDef* doc*
+usingDef          ::=  usingPod //| usingType | usingAs
+usingPod        ::=  using podSpec ['::' id [as id]]
+//usingType       ::=  using podSpec '::' id
+//usingAs         ::=  using podSpec '::' id as id
+podSpec         ::=  id | str | ffiPodSpec
+ffiPodSpec      ::= "[" id "]" id ("." id)*
+doc             ::= FANDOC_LINE_COMMENT
+//------------
+
+typeDef        ::=  classDef | mixinDef | facetDef | enumDef
+
+classDef                    ::=  typeHeader class id [inheritance] highOrderBlock {pin=2}
+highOrderBlock              ::=  "{" slotDefs "}" { pin = 1 }
+
+mixinDef       ::=  typeHeader mixin id [inheritance] highOrderBlock {pin=2}
+facetDef       ::=  typeHeader facet class id [inheritance] highOrderBlock {pin=2}
+enumDef        ::=  typeHeader enum class id [inheritance] enumBlock {pin=2}
+enumBlock      ::=  "{" enumValDefs slotDefs "}" {pin=1}
+
+typeHeader     ::=  [doc] facets typeFlags
+typeFlags      ::=  typeFlag*
+typeFlag       ::=  protection | abstract | final | const | native
+protection     ::=  public | protected | private | internal
+inheritance    ::=  ":" typeList
+
+//------------
+
+//enumValDefs    ::=  enumValDef ("," enumValDef)* [";"]
+//enumValDef     ::=  facets id ["(" args ")"]
+
+enumValDefs    ::=  enumValDef+ [";"]
+enumValDef     ::=  !("}" | <<eof>> | ';') enumValDef_item (',' | &';') {
+    pin=1
+    recoverWhile=enumValDef_item_recover
+}
+private enumValDef_item_recover ::= !("}" | <<eof>> | ';' | IDENTIFIER)
+enumValDef_item ::= facets id ["(" args ")"]
+
+
+slotDefs       ::=  slotDef*
+slotDef        ::=  !('}' | <<eof>>) slotDef_item {
+    pin=1
+    recoverWhile=class_item_recover
+}
+private class_item_first ::= methodFlag | typeFlag | protection
+private class_item_recover ::= !('}' | <<eof>> | "@" | class_item_first | new | IDENTIFIER)
+private slotDef_item ::= methodDef
+                        | fieldDef
+                        | ctorDef
+                        | staticInit
+
+/*private fieldDec  ::=  facets (methodFlag | fieldFlags) type (methodComp | fieldComp)
+private fieldComp   ::= id [":=" expr] [ fieldDefBlock ]
+private methodComp  ::= id itemParameterList [codeBlock]
+
+fieldDef         ::= fieldDec*/
+
+/*fieldDef       ::=  facets fieldFlags type id ":=" expr fieldDefBlock
+                  | facets fieldFlags type id ":=" expr
+                  | facets fieldFlags type id fieldDefBlock
+                  | facets fieldFlags type id*/
+fieldDef       ::=  facets fieldFlags type id [":=" expr]
+                     [ fieldDefBlock ]
+
+fieldDefBlock  ::=  "{" fieldDef_item "}" {pin=1}
+private fieldDef_item     ::= !("}" | <<eof>>) [fieldGetter] [fieldSetter] {
+    pin=1
+    recoverWhile=field_item_recover
+}
+private field_item_recover ::= !("}" | <<eof>> | get | set | fieldFlag)
+
+fieldFlags     ::=  fieldFlag*
+fieldFlag      ::=  protection | abstract | const | final | native |
+                     override | readonly | static | virtual
+fieldGetter    ::=  [protection] get [";" | block]
+fieldSetter    ::=  [protection] set [";" | block]
+
+methodDef ::= methodImplDef | abstractMethodDef
+abstractMethodDef ::= facets methodFlags type id itemParameterList
+methodImplDef      ::=  facets methodFlags type id itemParameterList statementBlock
+itemParameterList  ::=  "(" params* ")" {pin=1}
+
+methodFlags    ::=  methodFlag*
+methodFlag     ::=  protection | abstract | native | once |
+                     override | static | virtual | final
+params         ::=  !(')' | '{' | ';') [param] (',' | &')')
+{
+    pin=1
+    recoverWhile=params_recover
+}
+private params_recover ::= !(')' | '{' | ';' | type)
+
+param          ::=  type id [":=" expr]
+statementBlock      ::=  "{" stmts "}"
+{
+    pin=1
+}
+
+ctorDef        ::=  facets ctorFlags [static] new id itemParameterList [ctorChain] statementBlock
+ctorFlags      ::=  [protection]
+ctorChain      ::=  ":" ctorChainThis | ctorChainSuper
+ctorChainThis  ::=  this "." id "(" args ")"
+ctorChainSuper ::=  super ["." id] "(" args ")"
+
+staticInit     ::=  static statementBlock
+
+//--------------
+
+facets        ::= facetItems*
+facetItems    ::= "@" simpleType [facetVals] {pin=1}
+facetVals     ::= "{" facetVal+ "}" {pin=1}
+facetVal      ::= id "=" expr
+
+//-------------
+
+block          ::=  stmt | statementBlock
+stmts            ::=  stmtDef*
+private stmtDef          ::=  !('}' | <<eof>>) stmt
+{
+    pin=1
+    recoverWhile=stmt_item_recover
+}
+private stmt_item_recover ::= !('}' | <<eof>> | "@" | break
+                                    | continue | for | if | return
+                                    | throw | while | try | catch
+                                    | finally | switch | case
+                                    | default | this | super
+                                    | IDENTIFIER)
+
+stmt             ::=  breakStm | continueStm | forStm | ifStm | returnStm | switchStm |
+                     throwStm | whileStm | tryStm | exprStmt | itAdd | caseStm | defaultStm
+breakStm         ::=  break [";"]
+continueStm      ::=  continue [";"]
+forStm           ::=  for "(" [forInit] ";" [expr] ";" [expr] ")" block
+forInit        ::=  expr | localDef
+ifStm            ::=  if "(" expr ")" block [ else block ]
+returnStm        ::=  return [expr] [";"]
+throwStm         ::=  throw expr [";"]
+whileStm         ::=  while "(" expr ")" block
+exprStmt       ::=  localDef | expr [";"]
+localDef       ::=  localDefBlock [";"]
+private localDefBlock ::= type id ":=" expr | id ":=" expr | type id
+itAdd          ::=  expr ("," expr)* [","] [";"]
+
+tryStm           ::=  try block catchStm* [finallyStm]
+catchStm         ::=  catch [catchDef] block
+catchDef       ::=  "(" type id ")"
+finallyStm       ::=  finally block
+
+switchStm        ::=  switch "(" expr ")" switchStmBlock
+switchStmBlock   ::=  "{" caseStm* [defaultStm] "}" { pin=1 }
+
+caseStm          ::=  case expr ":" stmts
+defaultStm       ::=  default ":" stmts
+
+//------------
+
+expr           ::=  assignExpr
+assignExpr     ::=  ifExpr [assignOp assignExpr]
+assignOp       ::=  "=" | "*=" | "/=" | "%=" | "+=" | "-="
+
+ifExpr           ::=  condOrExpr ["?:" ifExprBody | "?" ifExprBody ":" ifExprBody]
+//ternaryExpr      ::=  condOrExpr ["?" ifExprBody ":" ifExprBody]
+//elvisExpr        ::=  condOrExpr "?:" ifExprBody
+ifExprBody     ::=  condOrExpr | ifExprThrow
+ifExprThrow    ::=  throw expr
+
+condOrExpr     ::=  condAndExpr  ("||" condAndExpr)*
+condAndExpr    ::=  equalityExpr ("&&" equalityExpr)*
+equalityExpr   ::=  relationalExpr [("==" | "!=" | "===" | "!==") relationalExpr]
+relationalExpr ::=  rangeExpr [(is | as | isnot) type | ("<" | "<=" | ">" | ">=" | "<=>") rangeExpr]
+//typeCheckExpr  ::=  rangeExpr [(is | as | isnot) type]
+//compareExpr    ::=  rangeExpr [("<" | "<=" | ">" | ">=" | "<=>") rangeExpr]
+rangeExpr      ::=  addExpr ((".." | "..<") addExpr)*
+addExpr        ::=  multExpr (("+" | "-") multExpr)*
+multExpr         ::=  parenExpr (("*" | "/" | "%") parenExpr)*
+parenExpr        ::=  unaryExpr | castExpr | groupedExpr
+castExpr       ::=  "(" type ")" parenExpr
+groupedExpr    ::=  "(" expr ")" termChain*
+unaryExpr      ::=  prefixExpr | termExpr | postfixExpr
+prefixExpr     ::=  ("!" | "+" | "-" | "++" | "--") parenExpr
+postfixExpr    ::=  termExpr ("++" | "--")
+
+termExpr       ::=  termBase termChain*
+termBase       ::=  literal | typeBase | idExpr
+typeBase       ::=  typeLiteral | namedSuper | staticCall |
+                     dsl | closure | simple | ctorBlock
+typeLiteral    ::=   [type] "#" id | type "#"
+//slotLiteral    ::=  [type] "#" id
+namedSuper     ::=  type "." super
+staticCall     ::=  type "." slotExpr
+dsl            ::=  type DSL_STRING
+simple         ::=  type "(" expr ")"
+ctorBlock      ::=  type itBlock
+termChain      ::=  dotCall | dynCallStm | safeDotCallStm | safeDynCallStm |
+                     indexExpr | callOp | itBlock
+itBlock        ::=  statementBlock
+dotCall        ::=  "." slotExpr
+dynCallStm       ::=  dynCall slotExpr
+safeDotCallStm   ::=  "?." slotExpr
+safeDynCallStm   ::=  safeDynCall slotExpr
+idExpr         ::=  local | slotExpr
+slotExpr       ::=  field | call
+local          ::=  id
+field          ::=  ["&"] id
+call           ::=  id ["(" args ")"] [closure]
+args           ::=  [expr ("," expr)*]
+indexExpr      ::=  "[" expr "]"
+callOp         ::=  "(" args ")" [closure] | closure
+
+literal        ::=  null | this | super | it |
+                     bool | INT_LITERAL | FLOAT_LITERAL | DECIMAL_LITERAL | str |
+                     DURATION_LITERAL | URI_LITERAL | list | map
+bool           ::=  TRUE | FALSE
+str            ::=  TRIPLE_STRING_LITERAL | STRING_LITERAL | CHAR_LITERAL
+list           ::=  [type] "[" listItems "]"
+listItems      ::=  "," | (expr ("," expr)*) [","]
+map            ::=  [mapType] "[" mapItems [","] "]"
+mapItems       ::=  ":" | (mapPair ("," mapPair)*)
+mapPair        ::=  expr ":" expr
+
+closure        ::=  closureSig statementBlock
+closureSig     ::=  "|" closureParams [dynCall type] "|"
+closureParams  ::=  [closureParam ("," closureParam)*]
+closureParam   ::=  formal | id
+
+//--------------------
+
+type           ::=  nullType | nonNullType
+nullType       ::=  nonNullType "?"
+nonNullType    ::=  listType | mapType | funcType | simpleType
+typeList       ::=  type ("," type)*
+simpleType     ::=  nullableType ["::" nullableType]
+//listType       ::=  type "[" "]"
+//mapType        ::=  ["["] type ":" type ["]"]
+private nullableType  ::= id ["?"]
+listType       ::=  simpleType "[" "]" "[" "]" | simpleType "[" "]"
+mapType        ::=  ["["] simpleType ":" type ["]"]
+funcType       ::=  "|" [formals] [dynCall type] "|"
+formals        ::=  [formal ("," formal)*]
+formal         ::=  formalFull
+formalFull     ::=  type [id] | id
+//formalInferred ::=  id
+//formalTypeOnly ::=  type
+
+//-------------------
+
+id             ::= IDENTIFIER
+
+private dynCall   ::= <<dynCallImpl>>
+private safeDynCall   ::= <<safeDynCallImpl>>
+private get       ::= <<getKeyword>>
+private set       ::= <<setKeyword>>
+//private elvisOp   ::= <<elvisOpImpl>>

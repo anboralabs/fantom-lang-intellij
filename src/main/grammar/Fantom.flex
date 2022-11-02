@@ -1,12 +1,45 @@
-package org.fandev.lang.fan;
+package co.anbora.labs.fantom.lang;
 
 import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.tree.IElementType;
-import static org.fandev.lang.fan.FanTokenTypes.*;
+import static com.intellij.psi.TokenType.BAD_CHARACTER;
+import static com.intellij.psi.TokenType.WHITE_SPACE;
+import static co.anbora.labs.fantom.lang.core.psi.FantomTypes.*;
+import static co.anbora.labs.fantom.lang.FantomParserDefinition.*;
 
 %%
 
-%class _FanLexer
+%{
+    /**
+        * Dedicated storage for starting position of some previously successful
+        * match
+    */
+    private int zzPostponedMarkedPos = -1;
+
+    /**
+        * Dedicated nested-comment level counter
+    */
+    private int zzNestedCommentLevel = 0;
+%}
+
+%{
+  public FanLexer() {
+    this(null);
+  }
+
+  IElementType imbueDslString() {
+      assert(zzNestedCommentLevel == 0);
+      yybegin(YYINITIAL);
+
+      zzStartRead = zzPostponedMarkedPos;
+      zzPostponedMarkedPos = -1;
+
+      return DSL_STRING;
+  }
+%}
+
+%public
+%class FanLexer
 %implements FlexLexer
 %unicode
 %function advance
@@ -14,12 +47,10 @@ import static org.fandev.lang.fan.FanTokenTypes.*;
 %eof{  return;
 %eof}
 
-%{
-    private boolean canEndWithNewline = false;
-%}
+%s STRING_DSL
 
-DIGIT=[0-9"_"]
-HEX_DIGIT=[0-9A-Fa-f"_"]
+DIGIT=[0-9] | [0-9]["_"]
+HEX_DIGIT=[0-9A-Fa-f] | [0-9A-Fa-f]["_"]
 ONE_NL = \r|\n|\r\n  // NewLines
 WHITE_SPACE_CHAR=" "|\t|\f // Whitespaces
 NLS={ONE_NL}({ONE_NL}|{WHITE_SPACE_CHAR})*
@@ -56,7 +87,7 @@ DURATION_POINT_LITERAL4=({DIGIT})+({DURATION_MARK_LITERAL})
 
 URI_LITERAL="`"([^\\"`"] | \\\` | \\[^"`"])*"`"
 CHAR_LITERAL="'"([^\\"'"] | \\\' | \\[^"'"])*"'"
-DSL_STRING="<|"[^"|>"]*"|>"
+//DSL_STRING="<|"[^"|>"]*"|>"
 TRIPLE_STRING_LITERAL=\"\"\"([^\"] | \"(\")?[^\"])*\"\"\"
 STRING_LITERAL=\"([^\\\"] | \\\" | \\[^\"])*\"
 
@@ -70,10 +101,31 @@ SHABENG="#!"[^\n]*
 
 %%
 
-<YYINITIAL> ":="                  { return COLON_EQ; }
-<YYINITIAL> "using"               { return USING_KEYWORD; }
+<YYINITIAL> {
+      "<|"                 {
+          yybegin(STRING_DSL); yypushback(2);
+       }
+}
 
-<YYINITIAL> {NLS}+                { return NLS; }
+<STRING_DSL> {
+      "<|"    {
+              if (zzNestedCommentLevel++ == 0)
+                  zzPostponedMarkedPos = zzStartRead;
+          }
+      "|>"    {
+              if (--zzNestedCommentLevel == 0)
+                  return imbueDslString();
+          }
+      <<EOF>> {
+              zzNestedCommentLevel = 0; return imbueDslString();
+          }
+      [^]     { }
+}
+
+<YYINITIAL> ":="                  { return COLON_EQ; }
+<YYINITIAL> "using"               { return USING; }
+
+<YYINITIAL> {NLS}+                { return WHITE_SPACE; }
 <YYINITIAL> {WHITE_SPACE_CHAR}+   { return WHITE_SPACE; }
 
 <YYINITIAL> {INTEGER_LITERAL}     { yybegin(YYINITIAL); return INT_LITERAL; }
@@ -82,61 +134,60 @@ SHABENG="#!"[^\n]*
 <YYINITIAL> {DURATION_LITERAL}    { yybegin(YYINITIAL); return DURATION_LITERAL; }
 
 <YYINITIAL> {URI_LITERAL}         { yybegin(YYINITIAL); return URI_LITERAL; }
-<YYINITIAL> {DSL_STRING}  { yybegin(YYINITIAL); return DSL_STRING; }
+//<YYINITIAL> {DSL_STRING}  { yybegin(YYINITIAL); return DSL_STRING; }
 <YYINITIAL> {CHAR_LITERAL}        { yybegin(YYINITIAL); return CHAR_LITERAL; }
 <YYINITIAL> {TRIPLE_STRING_LITERAL}      { yybegin(YYINITIAL); return STRING_LITERAL; }
 <YYINITIAL> {STRING_LITERAL}      { yybegin(YYINITIAL); return STRING_LITERAL; }
 
 /* Keywords */
 
-<YYINITIAL> "abstract"            { yybegin(YYINITIAL); return ABSTRACT_KEYWORD; }
-<YYINITIAL> "as"                  { yybegin(YYINITIAL); return AS_KEYWORD; }
-<YYINITIAL> "assert"              { yybegin(YYINITIAL); return ASSERT_KEYWORD; }
-<YYINITIAL> "break"               { yybegin(YYINITIAL); return BREAK_KEYWORD; }
-<YYINITIAL> "case"                { yybegin(YYINITIAL); return CASE_KEYWORD; }
-<YYINITIAL> "catch"               { yybegin(YYINITIAL); return CATCH_KEYWORD; }
-<YYINITIAL> "class"               { yybegin(YYINITIAL); return CLASS_KEYWORD; }
-<YYINITIAL> "const"               { yybegin(YYINITIAL); return CONST_KEYWORD; }
-<YYINITIAL> "continue"            { yybegin(YYINITIAL); return CONTINUE_KEYWORD; }
-<YYINITIAL> "default"             { yybegin(YYINITIAL); return DEFAULT_KEYWORD; }
-<YYINITIAL> "do"                  { yybegin(YYINITIAL); return DO_KEYWORD; }
-<YYINITIAL> "else"                { yybegin(YYINITIAL); return ELSE_KEYWORD; }
-<YYINITIAL> "pod"                 { yybegin(YYINITIAL); return POD_KEYWORD; }
-<YYINITIAL> "enum"                { yybegin(YYINITIAL); return ENUM_KEYWORD; }
-<YYINITIAL> "false"               { yybegin(YYINITIAL); return FALSE_KEYWORD; }
-<YYINITIAL> "final"               { yybegin(YYINITIAL); return FINAL_KEYWORD; }
-<YYINITIAL> "finally"             { yybegin(YYINITIAL); return FINALLY_KEYWORD; }
-<YYINITIAL> "for"                 { yybegin(YYINITIAL); return FOR_KEYWORD; }
-<YYINITIAL> "foreach"             { yybegin(YYINITIAL); return FOREACH_KEYWORD; }
-<YYINITIAL> "if"                  { yybegin(YYINITIAL); return IF_KEYWORD; }
-<YYINITIAL> "internal"            { yybegin(YYINITIAL); return INTERNAL_KEYWORD; }
-<YYINITIAL> "is"                  { yybegin(YYINITIAL); return IS_KEYWORD; }
-<YYINITIAL> "isnot"               { yybegin(YYINITIAL); return ISNOT_KEYWORD; }
-<YYINITIAL> "mixin"               { yybegin(YYINITIAL); return MIXIN_KEYWORD; }
-<YYINITIAL> "native"              { yybegin(YYINITIAL); return NATIVE_KEYWORD; }
-<YYINITIAL> "new"                 { yybegin(YYINITIAL); return NEW_KEYWORD; }
-<YYINITIAL> "null"                { yybegin(YYINITIAL); return NULL_KEYWORD; }
-<YYINITIAL> "once"                { yybegin(YYINITIAL); return ONCE_KEYWORD; }
-<YYINITIAL> "override"            { yybegin(YYINITIAL); return OVERRIDE_KEYWORD; }
-<YYINITIAL> "private"             { yybegin(YYINITIAL); return PRIVATE_KEYWORD; }
-<YYINITIAL> "protected"           { yybegin(YYINITIAL); return PROTECTED_KEYWORD; }
-<YYINITIAL> "public"              { yybegin(YYINITIAL); return PUBLIC_KEYWORD; }
-<YYINITIAL> "readonly"            { yybegin(YYINITIAL); return READONLY_KEYWORD; }
-<YYINITIAL> "return"              { yybegin(YYINITIAL); return RETURN_KEYWORD; }
-<YYINITIAL> "static"              { yybegin(YYINITIAL); return STATIC_KEYWORD; }
-<YYINITIAL> "super"               { yybegin(YYINITIAL); return SUPER_KEYWORD; }
-<YYINITIAL> "switch"              { yybegin(YYINITIAL); return SWITCH_KEYWORD; }
-<YYINITIAL> "this"                { yybegin(YYINITIAL); return THIS_KEYWORD; }
-<YYINITIAL> "throw"               { yybegin(YYINITIAL); return THROW_KEYWORD; }
-<YYINITIAL> "true"                { yybegin(YYINITIAL); return TRUE_KEYWORD; }
-<YYINITIAL> "try"                 { yybegin(YYINITIAL); return TRY_KEYWORD; }
-<YYINITIAL> "virtual"             { yybegin(YYINITIAL); return VIRTUAL_KEYWORD; }
-<YYINITIAL> "volatile"            { yybegin(YYINITIAL); return VOLATILE_KEYWORD; }
-<YYINITIAL> "while"               { yybegin(YYINITIAL); return WHILE_KEYWORD; }
+<YYINITIAL> "abstract"            { yybegin(YYINITIAL); return ABSTRACT; }
+<YYINITIAL> "as"                  { yybegin(YYINITIAL); return AS; }
+<YYINITIAL> "break"               { yybegin(YYINITIAL); return BREAK; }
+<YYINITIAL> "case"                { yybegin(YYINITIAL); return CASE; }
+<YYINITIAL> "catch"               { yybegin(YYINITIAL); return CATCH; }
+<YYINITIAL> "class"               { yybegin(YYINITIAL); return CLASS; }
+<YYINITIAL> "const"               { yybegin(YYINITIAL); return CONST; }
+<YYINITIAL> "continue"            { yybegin(YYINITIAL); return CONTINUE; }
+<YYINITIAL> "default"             { yybegin(YYINITIAL); return DEFAULT; }
+//<YYINITIAL> "do"                  { yybegin(YYINITIAL); return DO; }
+<YYINITIAL> "else"                { yybegin(YYINITIAL); return ELSE; }
+//<YYINITIAL> "pod"                 { yybegin(YYINITIAL); return POD; }
+<YYINITIAL> "enum"                { yybegin(YYINITIAL); return ENUM; }
+<YYINITIAL> "false"               { yybegin(YYINITIAL); return FALSE; }
+<YYINITIAL> "final"               { yybegin(YYINITIAL); return FINAL; }
+<YYINITIAL> "finally"             { yybegin(YYINITIAL); return FINALLY; }
+<YYINITIAL> "for"                 { yybegin(YYINITIAL); return FOR; }
+//<YYINITIAL> "foreach"             { yybegin(YYINITIAL); return FOREACH; }
+<YYINITIAL> "if"                  { yybegin(YYINITIAL); return IF; }
+<YYINITIAL> "internal"            { yybegin(YYINITIAL); return INTERNAL; }
+<YYINITIAL> "is"                  { yybegin(YYINITIAL); return IS; }
+<YYINITIAL> "isnot"               { yybegin(YYINITIAL); return ISNOT; }
+<YYINITIAL> "mixin"               { yybegin(YYINITIAL); return MIXIN; }
+<YYINITIAL> "native"              { yybegin(YYINITIAL); return NATIVE; }
+<YYINITIAL> "new"                 { yybegin(YYINITIAL); return NEW; }
+<YYINITIAL> "null"                { yybegin(YYINITIAL); return NULL; }
+<YYINITIAL> "once"                { yybegin(YYINITIAL); return ONCE; }
+<YYINITIAL> "override"            { yybegin(YYINITIAL); return OVERRIDE; }
+<YYINITIAL> "private"             { yybegin(YYINITIAL); return PRIVATE; }
+<YYINITIAL> "protected"           { yybegin(YYINITIAL); return PROTECTED; }
+<YYINITIAL> "public"              { yybegin(YYINITIAL); return PUBLIC; }
+<YYINITIAL> "readonly"            { yybegin(YYINITIAL); return READONLY; }
+<YYINITIAL> "return"              { yybegin(YYINITIAL); return RETURN; }
+<YYINITIAL> "static"              { yybegin(YYINITIAL); return STATIC; }
+<YYINITIAL> "super"               { yybegin(YYINITIAL); return SUPER; }
+<YYINITIAL> "switch"              { yybegin(YYINITIAL); return SWITCH; }
+<YYINITIAL> "this"                { yybegin(YYINITIAL); return THIS; }
+<YYINITIAL> "throw"               { yybegin(YYINITIAL); return THROW; }
+<YYINITIAL> "true"                { yybegin(YYINITIAL); return TRUE; }
+<YYINITIAL> "try"                 { yybegin(YYINITIAL); return TRY; }
+<YYINITIAL> "virtual"             { yybegin(YYINITIAL); return VIRTUAL; }
+//<YYINITIAL> "volatile"            { yybegin(YYINITIAL); return VOLATILE; }
+<YYINITIAL> "while"               { yybegin(YYINITIAL); return WHILE; }
 
 /* Type Literals */
 
-<YYINITIAL> "Actor"                { yybegin(YYINITIAL); return FAN_SYS_TYPE; }
+/*<YYINITIAL> "Actor"                { yybegin(YYINITIAL); return FAN_SYS_TYPE; }
 <YYINITIAL> "ActorPool"                { yybegin(YYINITIAL); return FAN_SYS_TYPE; }
 <YYINITIAL> "ArgErr"                { yybegin(YYINITIAL); return FAN_SYS_TYPE; }
 <YYINITIAL> "Bool"                { yybegin(YYINITIAL); return FAN_SYS_TYPE; }
@@ -235,7 +286,7 @@ SHABENG="#!"[^\n]*
 <YYINITIAL> "Void"                { yybegin(YYINITIAL); return FAN_SYS_TYPE; }
 <YYINITIAL> "Weekday"                { yybegin(YYINITIAL); return FAN_SYS_TYPE; }
 <YYINITIAL> "Zip"                { yybegin(YYINITIAL); return FAN_SYS_TYPE; }
-<YYINITIAL> "ZipEntryFile"                { yybegin(YYINITIAL); return FAN_SYS_TYPE; }
+<YYINITIAL> "ZipEntryFile"                { yybegin(YYINITIAL); return FAN_SYS_TYPE; }*/
 
 <YYINITIAL> {IDENTIFIER}          { yybegin(YYINITIAL); return IDENTIFIER; }
 
@@ -256,9 +307,9 @@ SHABENG="#!"[^\n]*
 <YYINITIAL> "."                   { yybegin(YYINITIAL); return DOT; }
 <YYINITIAL> ".."                  { yybegin(YYINITIAL); return RANGE_SEP_INCL; }
 <YYINITIAL> "..<"                 { yybegin(YYINITIAL); return RANGE_SEP_EXCL; }
-<YYINITIAL> "->"                  { yybegin(YYINITIAL); return DYN_CALL; }
+//<YYINITIAL> "->"                  { yybegin(YYINITIAL); return DYN_CALL; }
 <YYINITIAL> "?."                  { yybegin(YYINITIAL); return SAFE_DOT; }
-<YYINITIAL> "?->"                 { yybegin(YYINITIAL); return SAFE_DYN_CALL; }
+//<YYINITIAL> "?->"                 { yybegin(YYINITIAL); return SAFE_DYN_CALL; }
 
 <YYINITIAL> "="                   { yybegin(YYINITIAL); return EQ; }
 
