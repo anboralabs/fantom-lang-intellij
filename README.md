@@ -6,7 +6,7 @@
 
 ## What is it?
 
-Fantom lang is a plugin to highlight syntax for fantom language files 
+Fantom lang is a plugin to highlight syntax for fantom language files
 
 ## How to use it?
 
