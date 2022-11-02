@@ -15,6 +15,7 @@
     elementTypeClass="co.anbora.labs.fantom.lang.core.FantomElementType"
     tokenTypeClass="co.anbora.labs.fantom.lang.core.FantomTokenType"
 
+    extends(".*Stm")=stmt
 
     tokens = [
 
@@ -100,12 +101,13 @@ doc             ::= FANDOC_LINE_COMMENT
 
 typeDef        ::=  classDef | mixinDef | facetDef | enumDef
 
-classDef                    ::=  typeHeader class id [inheritance] blockCode {pin=2}
-blockCode                   ::=  "{" slotDefs "}" { pin = 1 }
+classDef                    ::=  typeHeader class id [inheritance] highOrderBlock {pin=2}
+highOrderBlock              ::=  "{" slotDefs "}" { pin = 1 }
 
-mixinDef       ::=  typeHeader mixin id [inheritance] blockCode
-facetDef       ::=  typeHeader facet class id [inheritance] blockCode
-enumDef        ::=  typeHeader enum class id [inheritance] "{" enumValDefs slotDefs "}"
+mixinDef       ::=  typeHeader mixin id [inheritance] highOrderBlock {pin=2}
+facetDef       ::=  typeHeader facet class id [inheritance] highOrderBlock {pin=2}
+enumDef        ::=  typeHeader enum class id [inheritance] enumBlock {pin=2}
+enumBlock      ::=  "{" enumValDefs slotDefs "}" {pin=1}
 
 typeHeader     ::=  [doc] facets typeFlags
 typeFlags      ::=  typeFlag*
@@ -115,8 +117,17 @@ inheritance    ::=  ":" typeList
 
 //------------
 
-enumValDefs    ::=  enumValDef ("," enumValDef)* [";"]
-enumValDef     ::=  facets id ["(" args ")"]
+//enumValDefs    ::=  enumValDef ("," enumValDef)* [";"]
+//enumValDef     ::=  facets id ["(" args ")"]
+
+enumValDefs    ::=  enumValDef+ [";"]
+enumValDef     ::=  !("}" | <<eof>> | ';') enumValDef_item (',' | &';') {
+    pin=1
+    recoverWhile=enumValDef_item_recover
+}
+private enumValDef_item_recover ::= !("}" | <<eof>> | ';' | IDENTIFIER)
+enumValDef_item ::= facets id ["(" args ")"]
+
 
 slotDefs       ::=  slotDef*
 slotDef        ::=  !('}' | <<eof>>) slotDef_item {
@@ -158,7 +169,7 @@ fieldSetter    ::=  [protection] set [";" | block]
 
 methodDef ::= methodImplDef | abstractMethodDef
 abstractMethodDef ::= facets methodFlags type id itemParameterList
-methodImplDef      ::=  facets methodFlags type id itemParameterList codeBlock
+methodImplDef      ::=  facets methodFlags type id itemParameterList statementBlock
 itemParameterList  ::=  "(" params* ")" {pin=1}
 
 methodFlags    ::=  methodFlag*
@@ -172,18 +183,18 @@ params         ::=  !(')' | '{' | ';') [param] (',' | &')')
 private params_recover ::= !(')' | '{' | ';' | type)
 
 param          ::=  type id [":=" expr]
-codeBlock      ::=  "{" stmts "}"
+statementBlock      ::=  "{" stmts "}"
 {
     pin=1
 }
 
-ctorDef        ::=  facets ctorFlags [static] new id itemParameterList [ctorChain] codeBlock
+ctorDef        ::=  facets ctorFlags [static] new id itemParameterList [ctorChain] statementBlock
 ctorFlags      ::=  [protection]
 ctorChain      ::=  ":" ctorChainThis | ctorChainSuper
 ctorChainThis  ::=  this "." id "(" args ")"
 ctorChainSuper ::=  super ["." id] "(" args ")"
 
-staticInit     ::=  static codeBlock
+staticInit     ::=  static statementBlock
 
 //--------------
 
@@ -194,7 +205,7 @@ facetVal      ::= id "=" expr
 
 //-------------
 
-block          ::=  stmt | codeBlock
+block          ::=  stmt | statementBlock
 stmts            ::=  stmtDef*
 private stmtDef          ::=  !('}' | <<eof>>) stmt
 {
@@ -209,7 +220,7 @@ private stmt_item_recover ::= !('}' | <<eof>> | "@" | break
                                     | IDENTIFIER)
 
 stmt             ::=  breakStm | continueStm | forStm | ifStm | returnStm | switchStm |
-                     throwStm | whileStm | tryStm | exprStmt | itAdd
+                     throwStm | whileStm | tryStm | exprStmt | itAdd | caseStm | defaultStm
 breakStm         ::=  break [";"]
 continueStm      ::=  continue [";"]
 forStm           ::=  for "(" [forInit] ";" [expr] ";" [expr] ")" block
@@ -228,7 +239,9 @@ catchStm         ::=  catch [catchDef] block
 catchDef       ::=  "(" type id ")"
 finallyStm       ::=  finally block
 
-switchStm        ::=  switch "(" expr ")" "{" caseStm* [defaultStm] "}"
+switchStm        ::=  switch "(" expr ")" switchStmBlock
+switchStmBlock   ::=  "{" caseStm* [defaultStm] "}" { pin=1 }
+
 caseStm          ::=  case expr ":" stmts
 defaultStm       ::=  default ":" stmts
 
@@ -273,7 +286,7 @@ simple         ::=  type "(" expr ")"
 ctorBlock      ::=  type itBlock
 termChain      ::=  dotCall | dynCallStm | safeDotCallStm | safeDynCallStm |
                      indexExpr | callOp | itBlock
-itBlock        ::=  codeBlock
+itBlock        ::=  statementBlock
 dotCall        ::=  "." slotExpr
 dynCallStm       ::=  dynCall slotExpr
 safeDotCallStm   ::=  "?." slotExpr
@@ -298,7 +311,7 @@ map            ::=  [mapType] "[" mapItems [","] "]"
 mapItems       ::=  ":" | (mapPair ("," mapPair)*)
 mapPair        ::=  expr ":" expr
 
-closure        ::=  closureSig codeBlock
+closure        ::=  closureSig statementBlock
 closureSig     ::=  "|" closureParams [dynCall type] "|"
 closureParams  ::=  [closureParam ("," closureParam)*]
 closureParam   ::=  formal | id

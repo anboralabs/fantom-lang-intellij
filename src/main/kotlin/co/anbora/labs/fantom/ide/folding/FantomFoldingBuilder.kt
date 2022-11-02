@@ -1,8 +1,6 @@
 package co.anbora.labs.fantom.ide.folding
 
-import co.anbora.labs.fantom.lang.core.psi.FantomBlockCode
-import co.anbora.labs.fantom.lang.core.psi.FantomCodeBlock
-import co.anbora.labs.fantom.lang.core.psi.FantomVisitor
+import co.anbora.labs.fantom.lang.core.psi.*
 import com.intellij.lang.ASTNode
 import com.intellij.lang.folding.FoldingBuilderEx
 import com.intellij.lang.folding.FoldingDescriptor
@@ -22,8 +20,11 @@ class FantomFoldingBuilder: FoldingBuilderEx(), DumbAware {
     }
 
     override fun getPlaceholderText(node: ASTNode): String? = when (node.psi) {
-        is FantomBlockCode -> BLOCK_PLACE_HOLDER
-        is FantomCodeBlock -> BLOCK_PLACE_HOLDER
+        is FantomHighOrderBlock -> BLOCK_PLACE_HOLDER
+        is FantomEnumBlock -> BLOCK_PLACE_HOLDER
+        is FantomFieldDefBlock -> BLOCK_PLACE_HOLDER
+        is FantomStatementBlock -> BLOCK_PLACE_HOLDER
+        is FantomSwitchStmBlock -> BLOCK_PLACE_HOLDER
         else -> null
     }
 
@@ -31,9 +32,15 @@ class FantomFoldingBuilder: FoldingBuilderEx(), DumbAware {
 
     private class FoldingVisitor(private val descriptors: MutableList<FoldingDescriptor>): FantomVisitor() {
 
-        override fun visitBlockCode(o: FantomBlockCode) = fold(o)
+        override fun visitHighOrderBlock(o: FantomHighOrderBlock) = fold(o)
 
-        override fun visitCodeBlock(o: FantomCodeBlock) = fold(o)
+        override fun visitEnumBlock(o: FantomEnumBlock) = fold(o)
+
+        override fun visitFieldDefBlock(o: FantomFieldDefBlock) = fold(o)
+
+        override fun visitStatementBlock(o: FantomStatementBlock) = fold(o)
+
+        override fun visitSwitchStmBlock(o: FantomSwitchStmBlock) = fold(o)
 
         private fun fold(element: PsiElement) {
             descriptors += FoldingDescriptor(element.node, element.textRange)
