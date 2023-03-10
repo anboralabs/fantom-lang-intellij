@@ -1,12 +1,12 @@
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "1.7.10"
-    id("org.jetbrains.intellij") version "1.13.1-SNAPSHOT"
-    id("org.jetbrains.grammarkit") version "2022.3"
+    id("org.jetbrains.intellij") version "1.13.2"
+    id("org.jetbrains.grammarkit") version "2022.3.1"
 }
 
 group = "co.anbora.labs"
-version = "1.2.2"
+version = "1.2.3"
 
 repositories {
     mavenCentral()
@@ -35,29 +35,17 @@ tasks {
     }
 
     val generateFantomLexer = task<org.jetbrains.grammarkit.tasks.GenerateLexerTask>("generateFantomLexer") {
-        source.set("src/main/grammar/Fantom.flex")
+        sourceFile.set(file("src/main/grammar/Fantom.flex"))
         targetDir.set("src/main/gen/co/anbora/labs/fantom/lang/")
         targetClass.set("FanLexer")
         purgeOldFiles.set(true)
     }
 
     val generateFantomParser = task<org.jetbrains.grammarkit.tasks.GenerateParserTask>("generateFantomParser") {
-        source.set("src/main/grammar/Fantom.bnf")
+        sourceFile.set(file("src/main/grammar/Fantom.bnf"))
         targetRoot.set("src/main/gen")
         pathToParser.set("/co/anbora/labs/fantom/lang/core/parser/FantomParser.java")
         pathToPsiRoot.set("/co/anbora/labs/fantom/lang/core/psi")
-        sourceFile.convention(source.map {
-            project.layout.projectDirectory.file(it)
-        })
-        targetRootOutputDir.convention(targetRoot.map {
-            project.layout.projectDirectory.dir(it)
-        })
-        parserFile.convention(pathToParser.map {
-            project.layout.projectDirectory.file("${targetRoot.get()}/$it")
-        })
-        psiDir.convention(pathToPsiRoot.map {
-            project.layout.projectDirectory.dir("${targetRoot.get()}/$it")
-        })
         purgeOldFiles.set(true)
     }
 
