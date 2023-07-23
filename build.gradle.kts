@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "co.anbora.labs"
-version = "1.2.9"
+version = "1.3.0"
 
 repositories {
     mavenCentral()
@@ -24,7 +24,7 @@ intellij {
     version.set("LATEST-EAP-SNAPSHOT")
     type.set("IU") // Target IDE Platform
 
-    plugins.set(listOf("com.intellij.java"))
+    plugins.set(listOf())
 }
 
 tasks {
@@ -63,5 +63,9 @@ tasks {
 
     publishPlugin {
         token.set(System.getenv("PUBLISH_TOKEN"))
+    }
+
+    buildSearchableOptions {
+        enabled = false
     }
 }
