@@ -1,6 +1,6 @@
 <idea-plugin>
     <id>co.anbora.labs.fantom-lang</id>
-    <name>Fantom Lang</name>
+    <name>Fantom Lang (Community Edition)</name>
     <vendor email="anboralabs@gmail.com" url="https://labs.anbora.co">Anbora-labs</vendor>
 
     <depends>com.intellij.modules.platform</depends>
