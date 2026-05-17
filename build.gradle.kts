@@ -5,9 +5,9 @@ fun environment(key: String) = providers.environmentVariable(key)
 
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "2.2.0"
-    id("org.jetbrains.intellij.platform") version "2.11.0"
-    id("org.jetbrains.grammarkit") version "2023.3.0.1"
+    id("org.jetbrains.kotlin.jvm") version "2.3.20"
+    id("org.jetbrains.intellij.platform") version "2.16.0"
+    id("org.jetbrains.intellij.platform.grammarkit") version "2.16.0"
 }
 
 group = properties("pluginGroup").get()
@@ -15,7 +15,7 @@ version = properties("pluginVersion").get()
 
 // Set the JVM language level used to build the project.
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(25)
 }
 
 // Configure project's dependencies
@@ -109,22 +109,20 @@ tasks {
         gradleVersion = properties("gradleVersion").get()
     }
 
-    val generateFantomLexer = task<org.jetbrains.grammarkit.tasks.GenerateLexerTask>("generateFantomLexer") {
+    generateLexer {
         sourceFile.set(file("src/main/grammar/Fantom.flex"))
-        targetOutputDir.set(file("src/main/gen/co/anbora/labs/fantom/lang/"))
+        targetRootOutputDir.set(file("src/main/gen/co/anbora/labs/fantom/lang/"))
         // targetClass.set("FanLexer")
         purgeOldFiles.set(true)
     }
 
-    val generateFantomParser = task<org.jetbrains.grammarkit.tasks.GenerateParserTask>("generateFantomParser") {
+    generateParser {
         sourceFile.set(file("src/main/grammar/Fantom.bnf"))
         targetRootOutputDir.set(file("src/main/gen"))
-        pathToParser.set("/co/anbora/labs/fantom/lang/core/parser/FantomParser.java")
-        pathToPsiRoot.set("/co/anbora/labs/fantom/lang/core/psi")
-        purgeOldFiles.set(true)
+        purgeOldFiles.set(false)
     }
 
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        dependsOn(generateFantomLexer, generateFantomParser)
+        dependsOn("generateLexer", "generateParser")
     }
 }
