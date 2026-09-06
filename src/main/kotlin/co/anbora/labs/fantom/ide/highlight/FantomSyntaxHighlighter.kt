@@ -10,6 +10,6 @@ class FantomSyntaxHighlighter: SyntaxHighlighterBase() {
     override fun getHighlightingLexer(): Lexer = FantomLexer()
 
     override fun getTokenHighlights(
-        tokenType: IElementType?
+        tokenType: IElementType
     ): Array<TextAttributesKey> = pack(tokenType.textAttributesKey())
 }
